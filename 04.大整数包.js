@@ -2,14 +2,36 @@
 // 定义一个数据类型，大整数类型
 // 构造函数，接收数字，或者数字字符串
 // 接收本身类型
-function BigNum(numStr){
+function BigNum(numStr=''){
+
+    // 判断数据类型
+    if(typeof numStr !=='number'&&typeof numStr!=='string'&& (!(numStr instanceof BigNum))){
+        throw new Error('数据类型只能是number，string，BigNum')
+    }
     // 判断类型是否位BigNum类型
     if(numStr instanceof BigNum){
         this.num=numStr.num.concat([])
     }else{
-        if(typeof numStr!=='string'){
-            numStr=''+numStr
+
+        if(typeof numStr==='number'){
+            if( numStr<-Infinity||numStr>Infinity){
+                throw new Error('超过显示范围请输入数字字符串')
+            }
+            numStr=numStr.toString(10)
         }
+
+        // 判断数字字符串是否合法
+        for(let i=0;i<numStr.length;i++){
+            if(numStr.charCodeAt(i)<48||numStr.charCodeAt(i)>57){
+                if(numStr.charCodeAt(i)!==45){
+                    throw new Error('数字字符串不合法')
+                }
+            }
+        }
+
+        // 是字符串类型
+        numStr=''+numStr
+        console.log(numStr);
         // 参数为表示一个大整数的字符串
         // 构造函数
         // 对普通Number类型num进行改造
@@ -21,15 +43,36 @@ function BigNum(numStr){
             let code=numStr.charCodeAt(len-i-1)-48
             this.num.push(code)
         }
+        
+
+        
     }
+}
+
+BigNum.prototype.toString=function(){
+
+    // let num=this.num.filter(item=>item!==0)
+
+    let res=''
+    let flag=false
+    for(let i=this.num.length-1;i>=0;i--){
+        if(this.num[i]!==0&&!flag){
+            flag=true
+        }
+        if(flag){
+            res+=this.num[i]
+        }
+        
+    }
+    console.log(res);
 }
 
 
 // BigNum的原型方法，a.modAdd(b) 
 BigNum.prototype.modAdd=function(b){
     // 参数为参与运算的bignum类型
-    // console.log(b instanceof BigNum);
-    if(b instanceof BigNum){
+    console.log(b instanceof BigNum);
+    if(!(b instanceof BigNum)){
         throw new Error('参数类型必须为BigNum')
     }
 
@@ -93,10 +136,9 @@ let modAddHandle={
             }
             let temp=opt1+opt2+carry
             // 可能产生进位
-            carry=temp/10
+            carry=Math.floor(temp/10)
             // 余数
             let rest=temp%10
-
 
             // 余数作为当前位的结果
             _newArr.push(rest)
@@ -145,6 +187,8 @@ let modAddHandle={
             newA.num.pop()
             result=modSubHandle['0'](b,newA)
         }
+
+        return result
     }
 }
 
@@ -168,6 +212,14 @@ const plusModAdd=(a,b)=>{
             opt1+=10
             // 同时高位借1
             a.num[i+1]--
+            // 高位可能会小于0
+            let k=i+1
+            while(a.num[k]<0){
+                a.num[k]+=10
+                // 外高位是不是减1
+                k++
+                a.num[k]--
+            }
         }
         let res=opt1-opt2
         newRes.num.push(res)
@@ -240,7 +292,14 @@ let modSubHandle={
     }
 }
 
-modAddHandle['1'](new BigNum(-33),new BigNum(-33))
+// modAddHandle['1'](new BigNum(-33),new BigNum(-33))
+
+
+// let a=new BigNum(-199999)
+// let b=new BigNum(200000)
+// a.modAdd(b).toString()
+
+new BigNum('2000000000000000000000000000000000').modAdd(new BigNum('4000000000000000000000000000000000000000000000000000000000000000000000000000000000000')).toString()
 
 
 
