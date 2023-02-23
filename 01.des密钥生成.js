@@ -1,16 +1,27 @@
 function hexToBinary(value){
+    // 16进制字符串转换位2进制字符串
+    let binaryStr=''
     let len=value.length*4
-    let value10=parseInt(value,16)
-    let value2=value10.toString(2)
-    // 前补充0
-    while(value2.length<len){
-        value2='0'+value2
+
+    for(let i=0;i<value.length;i++){
+        let str=value.substring(i,i+1)
+        let value10=parseInt(str,16)
+        let value2=value10.toString(2)
+        while(value2.length<4){
+            value2='0'+value2
+        }
+        binaryStr+=value2
     }
-    let initarr=value2.split("")
+    
+    
+    // 前补充0
+    
+    let initarr=binaryStr.split("")
 
     return initarr
 }
 
+// 密码先进行置换64--->56位
 function processPchange1(initalArr){
 
     let pChange1=
@@ -73,6 +84,8 @@ function processPchange2(initalArr){
         cArr=circleChange(cArr,circleArr[i-1])
         dArr=circleChange(dArr,circleArr[i-1])
 
+        console.log('ci',parseInt(cArr.join(""),2).toString(16));
+        console.log('di',parseInt(dArr.join(""),2).toString(16));
 
         // 合并56位
         let newArr=cArr.concat(dArr)
@@ -86,7 +99,7 @@ function processPchange2(initalArr){
     }
 
 
-    console.log(res);
+    
 
     // 将k1-k2个子密钥从2--->16进制
     let strArr=[]
@@ -102,7 +115,7 @@ function processPchange2(initalArr){
 
 
     // console.log(res[0]);
-
+    // console.log(res);
     return res
 
 }
@@ -111,7 +124,6 @@ function processPchange2(initalArr){
 function processChange3(initalArr){
 
     // 置换选择2
-
     let pchangeArr=[
         14,17,11,24,1,5,
         3,28,15,6,21,10,
@@ -136,16 +148,21 @@ function processChange3(initalArr){
 
 function circleChange(arr,length){
 
-    for(let i=0;i<length;i++){
-        let temp=arr[0]
-        for(let j=0;j<arr.length-1;j++){
+    // for(let i=0;i<length;i++){
+    //     let temp=arr[0]
+    //     for(let j=0;j<arr.length-1;j++){
 
-            arr[j]=arr[j+1]
-        }
-        arr[arr.length-1]=temp
-    }
+    //         arr[j]=arr[j+1]
+    //     }
+    //     arr[arr.length-1]=temp
+    // }
 
-    return arr
+    let right=arr.slice(0,length)
+    let left=arr.slice(length)
+
+
+
+    return left.concat(right)
 
 }
 
@@ -157,9 +174,13 @@ module.exports={
         // 初始密钥
         // let value="FEDCBA9876543210"
         let initalArr=hexToBinary(value)
+
+        console.log('初始密钥',parseInt(initalArr.join(""),2).toString(16));
     
         // 置换选择1
         let resArr1= processPchange1(initalArr)
+
+        console.log('眯眼生成，置换选择1',resArr1);
     
         // 轮函数
         return processPchange2(resArr1)

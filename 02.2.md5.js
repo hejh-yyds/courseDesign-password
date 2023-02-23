@@ -22,7 +22,7 @@ function getRoundleft(){
         }
     }
 
-    //console.log('循环左移数组:',roundLeft);
+    // console.log('循环左移数组:',roundLeft);
     return roundLeft
 }
 
@@ -31,126 +31,51 @@ function generateCArr(){
     let m=[]
     for(let i=0;i<64;i++){
         let res=Math.floor( Math.abs(Math.sin(i+1))*(2**32))
-        let str=res.toString(16)
-        while(str.length<8){
-            str='0'+str
-        }
-        m.push(str)
+        
+        m.push(res)
     }
-
-    //console.log('常数数组:',m);
-
     return m
 }
 
-// 将16进制字符串转换为2进制数，返回值为二进制数组
-function hexToBinary(hexStr){
-    let decimal=parseInt(hexStr,16)
 
-    let binaryStr=decimal.toString(2)
-
-    // 需要注意前补0
-    let length=hexStr.length*4
-    let cnt=length-binaryStr.length
-    if(cnt>0){
-        for(let i=0;i<cnt;i++){
-            binaryStr='0'+binaryStr
-        }
-    }
-
-    return binaryStr.split("").map(item=>Number(item) )
-}
-
-// 定义四种基本运算
-function and(opt1,opt2){
-    // 默认是数组
-    let _newArr=[]
-    let length=opt1.length
-
+// 整数转二进制
+function intTobin(n,length=8){
+    // 默认转成8位二进制
+    let res=''
     for(let i=0;i<length;i++){
-        let res=0
-        if(opt1[i]===opt2[i]&&opt1[i]===1){
-            res=1
-        }
 
-        _newArr.push(res)
+        let str=new String((n>>i)&1) 
+        res=str+res
     }
 
-    return _newArr
+    return res
 }
 
-// 定义四种基本运算
-function or(opt1,opt2){
-    // 默认是数组
-    let _newArr=[]
-    let length=opt1.length
-
-    for(let i=0;i<length;i++){
-        let res=1
-        if(opt1[i]===opt2[i]&&opt1[i]===0){
-            res=0
-        }
-        _newArr.push(res)
-    }
-
-    return _newArr
-}
-
-function xor(opt1,opt2){
-    // 默认是数组
-    let _newArr=[]
-    let length=opt1.length
-
-    for(let i=0;i<length;i++){
-        let res=1
-        if(opt1[i]===opt2[i]){
-            res=0
-        }
-
-        _newArr.push(res)
-    }
-
-    return _newArr
-}
-
-function not(opt1){
-    // 默认是数组
-    let _newArr=[]
-    let length=opt1.length
-
-    for(let i=0;i<length;i++){
-        let res=(opt1[i]+1)%2
-        _newArr.push(res)
-    }
-
-    return _newArr
-}
 
 // F函数
-function F(opt1,opt2,opt3){
-    let res1=and(opt1,opt2)
-    let res2=and(not(opt1),opt3)
-    let res3=or(res1,res2)
-    return res3
+function F(X,Y,Z){
+    
+    return (X & Y) | ((~X) & Z)
+        
 }
 
-function G(opt1,opt2,opt3){
-    let res1=and(opt1,opt3)
-    let res2=and(opt2,not(opt3))
-    let res3=or(res1,res2)
-    return res3
+function G(X,Y,Z){
+    return (X & Z) | (Y & (~Z))
+    
+        
 }
 
-function H(opt1,opt2,opt3){
-    let res1=xor(opt1,opt2)
-    let res3=xor(res1,opt3)
-    return res3
+function H(X,Y,Z){
+    return X ^ Y ^ Z  
 }
 
-function I(opt1,opt2,opt3){
-    let res1=or(opt1,not(opt3))
-    let res3=xor(opt2,res1)
-    return res3
+function I(X,Y,Z){
+    return Y ^ (X | (~Z))
+}
+
+function circle_Left(x,amount){
+    x &= 0xFFFFFFFF                                       
+    return (x << amount) | (x >>> (32 - amount))
 }
 
 
@@ -164,15 +89,12 @@ function generateXarr(message){
     // 消息的每一个字符转换为ascall码再转换为二进制数
     for(let i=0;i<length;i++){
         let code=message.charCodeAt(i)
-        
         // TODO
-        let binaryStr=hexToBinary(code.toString(16)).join("")
-        // let binaryStr=code.toString(2)
-
+        let binaryStr=intTobin(code)
         cStr+=binaryStr
     }
 
-    //console.log('cStr:',cStr);
+    // console.log('cStr:',cStr);
 
     // 这里可以得到比特长度
 
@@ -209,25 +131,32 @@ function generateXarr(message){
 
     // 最后64位存储比特数（cStr的长度）
     // 二进制表示
-    let lenBinary=hexToBinary(initLength.toString(16)).join("")
+    // length长度表示8位<=255
+    // >255 16位
+    let lenBinary=null
+    if(initLength<255){
+        lenBinary=intTobin(initLength)
+    }else{
+        lenBinary=intTobin(initLength,16)
+
+        // 字符串 8-16在前，0-8在后
+        let leftStr=lenBinary.substring(8,16)
+        let rightStr=lenBinary.substring(0,8)
+        lenBinary=leftStr+rightStr
+    }
+    
 
     // 高位在前
     cStr+=lenBinary
-
     // 判断长度是否为64位，前补0
     if(lenBinary.length<64){
         let tempStr=''
         for(let k=lenBinary.length;k<64;k++){
             tempStr+='0'
         }
-
         cStr+=tempStr
     }
-
-    
-
-    
-    
+ 
         
     // 消息分成512比特块n个
     let _newArr=[]
@@ -237,11 +166,10 @@ function generateXarr(message){
         let aStr=cStr.substring(start,end)
 
         let arr=aStr.split("").map(item=>Number(item))
-
         _newArr.push(arr)
     }
 
-    //console.log('n个512比特块',_newArr);
+    // console.log('n个512比特块',_newArr);
 
     return _newArr
 }
@@ -256,10 +184,10 @@ function get16M(arr){
         let start=i*32
         let end=(i+1)*32
 
-        // //console.log(arr);
+        // console.log(arr);
         // 分成4块
         let res=arr.slice(start,end)
-        // //console.log(res);
+        // console.log(res);
 
         let newArr=[]
         // 0-8,8-16,16-24,24-32
@@ -268,11 +196,9 @@ function get16M(arr){
         ,res.slice(8,16),res.slice(0,8))
         
 
-        // //console.log('newArr',newArr);
+        // console.log('newArr',newArr);
         _newArr.push(newArr)
     }
-
-    // //console.log(_newArr);
 
     return _newArr
 }
@@ -283,7 +209,7 @@ function md5_Utf8Encode(string) {
     var utftext = "";
     for (var n = 0; n < string.length; n++) {
       var c = string.charCodeAt(n);
-    //   //console.log(c)
+    //   console.log(c)
       if (c < 128) {
         utftext += String.fromCharCode(c);
       } else if ((c > 127) && (c < 2048)) {
@@ -298,27 +224,13 @@ function md5_Utf8Encode(string) {
     return utftext;
 }
 
-// //console.log( hexToBinary('17689988'))
-
-// let res=md5_Utf8Encode('123456握手')
-// //console.log(res);
-
-// generateXarr('12345')
-
-function circle_Left(x,amount){
-    x &= 0xFFFFFFFF
-    console.log(x);                                       
-    return (x << amount) | (x >>> (32 - amount))
-}
-
 // 定义轮次操作
-function add(Bi,Ai,resi,mii,cii,lefti){
-    let B=parseInt(Bi,16)
-    let A=parseInt(Ai,16)
-    let res=parseInt(resi.join(""),2)
-    let mi=parseInt(mii.join(""),2)
-    let ci=parseInt(cii,16)
+function add(B,A,res,mii,ci,lefti){
 
+    
+    
+    // console.log('mii',mii);
+    let mi=parseInt(mii.join(""),2)
     console.log('opt1',B);
     console.log('opt2',A);
     console.log('res',res);
@@ -327,42 +239,17 @@ function add(Bi,Ai,resi,mii,cii,lefti){
     console.log('lefti',lefti);
 
     let temp=(A+res+mi+ci)
+    console.log('temp',temp);
 
-   console.log('temp',temp);
+    // 循环左移
+    temp=circle_Left(temp,lefti)
+    console.log('temp left',temp);
+    
+    temp=(B+temp)%Math.pow(2,32)
 
-    // 需要循环左移
-    // 转换为2进制
-    // let binaryStr=temp.toString(2)
-    // 前补充0
+    console.log('temp end',temp);
 
-    // TODO
-    // while(binaryStr.length<32){
-    //     //console.log('左移前的补零');
-    //     binaryStr='0'+binaryStr
-    // }
-
-    // // 循环左移
-
-    // // 截取前i位
-    // let beforeStr=binaryStr.substring(0,lefti)
-    // let afterStr=binaryStr.substring(lefti)
-
-    // let newStr=afterStr+beforeStr
-
-    // 重新转换位10进制
-    // let temp2=parseInt(newStr,2)
-    let temp2=circle_Left(temp,lefti)
-
-    console.log('temp left',temp2);
-
-    temp2=(B+temp2)%Math.pow(2,32)
-    // //console.log('temp2:',temp2.toString(16));
-    console.log('temp end',temp2);
-    let str=temp2.toString(16)
-    while(str.length<8){
-        str='0'+str
-    }
-    return str
+    return temp
 }
 
 
@@ -370,11 +257,10 @@ function roundFn(type,A,B,C,D,fType,mi,ci,lefti){
     // ，参数列表，A,B,C,D，函数类型F，Mi，Ci，lefti
     // 返回值应该给谁type:'A','B','C','D'
 
-    // A,B,C,D需要转换位二进制数组
-    let Ai=hexToBinary(A)
-    let Bi=hexToBinary(B)
-    let Ci=hexToBinary(C)
-    let Di=hexToBinary(D)
+    let Ai=A
+    let Bi=B
+    let Ci=C
+    let Di=D
 
     let res=null
 
@@ -413,6 +299,8 @@ function roundFn(type,A,B,C,D,fType,mi,ci,lefti){
 
     }
 
+    console.log(temp);
+
     switch(type){
 
         case 'A':
@@ -433,40 +321,58 @@ function roundFn(type,A,B,C,D,fType,mi,ci,lefti){
 
     }
 
+    // console.log('res',res);
+
     return res
 }
 
 
 function addSelf(A,AA){
 
-    let res=(parseInt(A,16)+parseInt(AA,16))%(Math.pow(2,32))
+    let res=(A+AA)%(Math.pow(2,32))
+    return res
+}
 
-    let str=res.toString(16)
-
-    while(str.length<8){
-        str='0'+str
+function print(A){
+    A=(A+Math.pow(2,32))%(Math.pow(2,32))
+    A=A.toString(16)
+    let str=''
+    for(let i=0;i<4;i++){
+        str=A.substring(i*2,(i+1)*2)+str 
     }
 
     return str
+   
 }
 
 // 主函数处理
 
 function mainFn(){
+    
 
-    let A='67452301'
-    let B='EFCDAB89'
-    let C='98BADCFE'
-    let D='10325476'
+    let A=0x67452301
+    let B=0xEFCDAB89
+    let C=0x98BADCFE
+    let D=0x10325476
 
-    let AA='67452301'
-    let BB='EFCDAB89'
-    let CC='98BADCFE'
-    let DD='10325476'
+    let AA=0x67452301
+    let BB=0xEFCDAB89
+    let CC=0x98BADCFE
+    let DD=0x10325476
+
+    // let A=0x12345678
+    // let B=0x89ABCDEF
+    // let C=0xFEDCBA98
+    // let D=0x76543210
+
+    // let AA=0x12345678
+    // let BB=0x89ABCDEF
+    // let CC=0xFEDCBA98
+    // let DD=0x76543210
     // 获取循环左移数组
     let myRoundLeft=getRoundleft()
 
-    // //console.log(myRoundLeft)
+    // console.log(myRoundLeft)
     // 获取常数数组
     let cArr=generateCArr()
 
@@ -477,7 +383,7 @@ function mainFn(){
         0,7,14,5,12,3,10,1,8,15,6,13,4,11,2,9]
 
     
-    let message='123456'
+    let message="123456"
 
     // utf-8编码
     message=md5_Utf8Encode(message)
@@ -491,6 +397,10 @@ function mainFn(){
     let types=['A','D','C','B']
     let Fs=['F','G','H','I']
     for(let i=0;i<mArr.length;i++){
+        AA=A
+        BB=B
+        CC=C
+        DD=D
 
         let mrrs=get16M(mArr[i])
             // 一共64个操作
@@ -505,8 +415,11 @@ function mainFn(){
             let F=Math.floor(j/16)
             let fType=Fs[F]
             let lefti=myRoundLeft[j]
+            console.log(A);
             
             let result=roundFn(type,A,B,C,D,fType,mi,ci,lefti)
+
+            // console.log(type,fType);
 
             switch(type){
                 case 'A':
@@ -539,6 +452,8 @@ function mainFn(){
 
     console.log(A,B,C,D);
 
+
+    console.log(print(A)+print(B)+print(C)+print(D));
 }
 
 

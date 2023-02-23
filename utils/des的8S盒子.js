@@ -65,6 +65,6 @@ const s8=[
 
 
 module.exports={
-    sBox:[s1,s2,s4,s4,s5,s6,s7,s8]
+    sBox:[s1,s2,s3,s4,s5,s6,s7,s8]
 }
 

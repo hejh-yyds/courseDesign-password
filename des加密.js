@@ -1,5 +1,7 @@
 const {sBox}=require("./utils/des的8S盒子.js")
 const {getChildK}=require("./01.des密钥生成")
+
+// 初始IP置换
 const  initPChange=(arr)=>{
 
     let initArr=[
@@ -20,9 +22,9 @@ const  initPChange=(arr)=>{
     }
 
     return newArr
-
 }
 
+// IP逆置换
 const  reservePChange=(arr)=>{
 
     let initArr=[
@@ -43,9 +45,9 @@ const  reservePChange=(arr)=>{
     }
 
     return newArr
-
 }
 
+// 论函数
 const round=(L0,R0,Ki)=>{
 
     // L=R
@@ -54,13 +56,18 @@ const round=(L0,R0,Ki)=>{
     // e盒扩展
     let newR= eChange(R0)
 
+    console.log('flat后的E盒',flatArr(newR));
+
     // 与k1异或
     // (前提)数组拍平
     newR=xorKR(flatArr(newR),Ki)
 
+    console.log('与KI异或 ',newR);
+
     // 数组重新升维
     // 分成8个6比特数组
     newR=toSixArr(newR)
+    console.log('升维的KI异或 ',newR);
 
     // s盒压缩
     let RStr="";
@@ -77,6 +84,8 @@ const round=(L0,R0,Ki)=>{
 
         // 替换表（10进制）
         let value=s[row][col]
+
+        console.log('10进制对于的s盒数:',value);
 
         // 转2进制
         let value2=value.toString(2)
@@ -101,8 +110,11 @@ const round=(L0,R0,Ki)=>{
     // 压缩后的32比特数组
     let newRStrArr=RStr.split("")
 
+    console.log('S盒压缩 ',newRStrArr);
+
     // p盒子置换
     newRStrArr=pChange(newRStrArr)
+    console.log('P盒置换 ',newRStrArr);
 
     // 与L异或
     let R1=xorLF(L0,newRStrArr)
@@ -151,6 +163,63 @@ const fChange=(arr)=>{
     // for 循环16轮
     
     for(let i=0;i<16;i++){
+        console.log(parseInt(L.join(""),2).toString(16));
+        console.log(parseInt(R.join(""),2).toString(16));
+        console.log(parseInt(ks[i].join(""),2).toString(16));
+        console.log('------------------------------');
+        let res=round(L,R,ks[i])
+
+        L=res.L1
+        R=res.R1
+    }
+
+    // 合并L，R
+    let RL=R.concat(L)
+
+
+    console.log('RL ',RL);
+    
+    // 进行初始逆置换
+
+    let resverRL=reservePChange(RL)
+    console.log('RL end',resverRL);
+    return resverRL
+    
+    
+}
+
+const fChange2=(arr)=>{
+
+
+    // 左右部分分离
+    let L=[]
+    let R=[]
+
+    arr.forEach((item,index)=>{
+        if(index>=32){
+            R.push(item)
+        }else{
+            L.push(item)
+        }
+    })
+
+
+    // 这里为k子密钥
+    // let k1=[
+    //     '1', '1', '1', '0', '0', '1', '0', '0',
+    //     '1', '1', '1', '1', '1', '1', '0', '1',
+    //     '1', '0', '0', '1', '1', '0', '0', '0',
+    //     '0', '1', '1', '0', '0', '1', '0', '0',
+    //     '1', '0', '1', '1', '0', '1', '1', '0',
+    //     '0', '1', '0', '1', '1', '0', '0', '0'
+    // ]
+
+    // 获取子密钥数组
+    let ks=getChildK()
+
+    // for 循环16轮
+    
+    for(let i=15;i>=0;i--){
         let res=round(L,R,ks[i])
 
         L=res.L1
@@ -269,6 +338,7 @@ const xorLF=(L,F)=>{
     return newArr
 }
 
+// 数组降维
 const flatArr=(arr)=>{
 
     let newArr=[]
@@ -280,6 +350,7 @@ const flatArr=(arr)=>{
     return newArr
 }
 
+// 数组升维
 const toSixArr=(arr)=>{
 
     // 48位的一维数组--->8行6列
@@ -290,41 +361,156 @@ const toSixArr=(arr)=>{
     }
 
     arr.forEach((item,index)=>{
-
         let rest=Math.floor(index/6)
-
         newArr[rest].push(item)
     })
 
     return newArr
-
 }
 
+// 16进制字符串--->2进制数组
 function hexToBinary(value){
+    // 16进制字符串转换位2进制字符串
+    let binaryStr=''
     let len=value.length*4
-    let value10=parseInt(value,16)
-    let value2=value10.toString(2)
-    // 前补充0
-    while(value2.length<len){
-        value2='0'+value2
+
+    for(let i=0;i<value.length;i++){
+        let str=value.substring(i,i+1)
+        let value10=parseInt(str,16)
+        let value2=value10.toString(2)
+        while(value2.length<4){
+            value2='0'+value2
+        }
+        binaryStr+=value2
     }
-    let initarr=value2.split("")
+    
+    
+    // 前补充0
+    
+    let initarr=binaryStr.split("")
 
     return initarr
 }
 // console.log(sBox);
 
+// 对中文字符的处理
+function utf8Encode(string) {
+    string = string.replace(/\r\n/g, "\n");
+    var utftext = "";
+    for (var n = 0; n < string.length; n++) {
+      var c = string.charCodeAt(n);
+    //   console.log(c)
+      if (c < 128) {
+        utftext += String.fromCharCode(c);
+      } else if ((c > 127) && (c < 2048)) {
+        utftext += String.fromCharCode((c >> 6) | 192);
+        utftext += String.fromCharCode((c & 63) | 128);
+      } else {
+        utftext += String.fromCharCode((c >> 12) | 224);
+        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+        utftext += String.fromCharCode((c & 63) | 128);
+      }
+    }
+    return utftext;
+}
+
+// 整数转二进制
+function intTobin(n,length=8){
+    // 默认转成8位二进制
+    let res=''
+    for(let i=0;i<length;i++){
+
+        let str=new String((n>>i)&1) 
+        res=str+res
+    }
+
+    return res
+}
+
+function to64Bit(message){
+    let cStr=''
+    // 消息的每一个字符转换为ascall码再转换为二进制数
+    for(let i=0;i<message.length;i++){
+        let code=message.charCodeAt(i)
+        // TODO
+        let binaryStr=intTobin(code)
+        cStr+=binaryStr
+    }
+
+    let _newArr=cStr.split("")
+    return _newArr
+}
+
+// 二进制数组转16进制字符串
+function binToHex(binArr){
+
+    console.log('binArr',binArr);
+    
+    let res=''
+    for(let i=0;i<binArr.length;i+=4){
+        let str=''+binArr.slice(i,i+4).join("")
+
+        let hexStr=parseInt(str,2).toString(16)
+
+        res+=hexStr
+    }
+
+    return res
+}
+
+function mainFn(){
+    // 明文长度64位(8字节)
+    let m='12345678'
+    m=utf8Encode(m)
+    // 转换为ascall码 8位存储
+    
+    // let initarr=hexToBinary(m)
+    let initarr=to64Bit(m)
+    console.log('init arr',initarr);
+    let newArr=initPChange(initarr)
+    console.log('change1 arr',m);
+    let result=fChange(newArr)
+
+    console.log(result);
+    // console.log(parseInt(result.join(""),2).toString(16));
+
+    console.log(binToHex(result));
+}
+
+function getAsc(arr){
+
+    let res=''
+    for(let i=0;i<arr.length;i+=8){
+        let str= String.fromCharCode(parseInt( arr.slice(i,i+8).join(""),2))
+        res+=str
+    }
+
+    return res
+}
 
 
+function DCode(){
+    // 明文长度64位(8字节)
+    // let m='12345678'
+    // m=utf8Encode(m)
+    // 转换为ascall码 8位存储
+    
+    // let initarr=hexToBinary(m)
+    // let initarr=to64Bit(m)
+    // console.log('init arr',initarr);
+    let initarr=hexToBinary("7321756f8650415a")
+    let newArr=initPChange(initarr)
+    // console.log('change1 arr',m);
+    let result=fChange2(newArr)
 
-// 明文长度64位
-let m='0123456789ABCDEF'
-let initarr=hexToBinary(m)
-let newArr=initPChange(initarr)
-let result=fChange(newArr)
+    console.log(binToHex(result));
 
+    // 对64位的比特，8位一组，求acass码
+    console.log(getAsc(result));
 
-console.log(parseInt(result.join(""),2).toString(16));
+    // console.log(parseInt(result.join(""),2).toString(16));
+}
 
+mainFn()
 
-console.log(111);
+DCode()
