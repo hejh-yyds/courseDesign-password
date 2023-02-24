@@ -181,9 +181,8 @@ BigNum.prototype.mod=function(p){
 // BigNum的原型方法，模整除法
 BigNum.prototype.modDiv=function(b){
     // 做一个减法， 统计次数（大 数）
-    // (a/b) a一直减b，直到不能a为负数，次数为结果
+    // (a/b)mod(p)
 
-    // (-a/-b)
 
 }
 

@@ -154,22 +154,23 @@ function circleChange(arr,length){
 }
 
 
+export const getChildK=function(value="FEDCBA9876543210"){
+    // 初始密钥
+    // let value="FEDCBA9876543210"
+    let initalArr=hexToBinary(value)
 
-module.exports={
-    getChildK:function(value="FEDCBA9876543210"){
-        // 初始密钥
-        // let value="FEDCBA9876543210"
-        let initalArr=hexToBinary(value)
+    console.log('初始密钥',parseInt(initalArr.join(""),2).toString(16));
 
-        console.log('初始密钥',parseInt(initalArr.join(""),2).toString(16));
-    
-        // 置换选择1
-        let resArr1= processPchange1(initalArr)
+    // 置换选择1
+    let resArr1= processPchange1(initalArr)
 
-        console.log('密钥生成,置换选择1',resArr1);
-    
-        // 轮函数
-        return processPchange2(resArr1)
-    }
+    console.log('密钥生成,置换选择1',resArr1);
+
+    // 轮函数
+    return processPchange2(resArr1)
 }
+
+// export default{
+//     getChildK:
+// }
 

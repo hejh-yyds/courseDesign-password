@@ -17,12 +17,13 @@ function gcd( n,  m) {
 }
 
 
-function mainFn() {
+function mainFn(z,c) {
 
+    let logArr=[]
     // c=(a+bx)mod28
     // z=a的逆(c-b)mod28
-    let Z = "计算机学院网络工程信息安全，我们热爱中华人民共和国。大家";
-    let C = "和院程安我爱计";
+    let Z = z
+    let C = c
     let res;
 
     let clen = C.length;
@@ -62,12 +63,19 @@ function mainFn() {
                     res+=Z[item]
                 })
 
-                console.log("当 a=",a,",b=",b," 时，解密结果为：",res)
-
+                logArr.push(`当 a=${a},b=${b} 时，解密结果为：${res}`)
             }
         }
     }
+
+    return logArr
 }
 
 
-mainFn()
+// mainFn()
+
+// export default {
+//     fsmm:mainFn
+// }
+
+export const fsmm=mainFn

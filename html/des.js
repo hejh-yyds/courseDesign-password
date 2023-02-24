@@ -1,5 +1,5 @@
-const {sBox}=require("./utils/des的8S盒子.js")
-const {getChildK}=require("./01.des密钥生成")
+import {sBox} from "./utils/des8S.js"
+import {getChildK} from "./desKGenarate.js"
 
 // 初始IP置换
 const  initPChange=(arr)=>{
@@ -511,6 +511,14 @@ function DCode(){
     // console.log(parseInt(result.join(""),2).toString(16));
 }
 
-mainFn()
+// mainFn()
 
 // DCode()
+
+export const desEncode=mainFn
+export const desDecode= DCode
+
+// export default{
+//     desEncode:mainFn,
+//     desDecode:DCode
+// }

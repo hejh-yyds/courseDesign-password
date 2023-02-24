@@ -84,7 +84,7 @@ function generateXarr(message){
     let length=message.length
 
     // 二进制存储的字符串
-    cStr=''
+    let cStr=''
     // 消息的每一个字符转换为ascall码再转换为二进制数
     for(let i=0;i<length;i++){
         let code=message.charCodeAt(i)
@@ -348,7 +348,7 @@ function print(A){
 
 // 主函数处理
 
-function mainFn(){
+function mainFn(m){
     
     let A=0x67452301
     let B=0xEFCDAB89
@@ -382,8 +382,7 @@ function mainFn(){
         5,8,11,14,1,4,7,10,13,0,3,6,9,12,15,2,
         0,7,14,5,12,3,10,1,8,15,6,13,4,11,2,9]
 
-    
-    let message="123456"
+    let message=m
 
     // utf-8编码
     message=md5_Utf8Encode(message)
@@ -455,10 +454,16 @@ function mainFn(){
 
     // 16进制字符串
     console.log(print(A)+print(B)+print(C)+print(D));
+
+    let res=print(A)+print(B)+print(C)+print(D)
+    return res
 }
 
-
-mainFn()
+// export default{
+//     md5:mainFn
+// }
+export const md5=mainFn
+// mainFn()
 
 
 

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .nav li {
+            list-style: none;
+        }
+
+        .nav {
+            display: flex;
+            height: 40px;
+            border-bottom: 1px solid #eee;
+
+
+        }
+
+        .nav li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .nav li.active {
+            border: 1px solid #eee;
+            border-bottom: none;
+        }
+
+        .w {
+            width: 1200px;
+            margin: 20px auto;
+        }
+
+        .tabs .tab {
+            display: none;
+        }
+
+        .tabs .tab.active {
+            display: block;
+        }
+
+        .tabs {
+            margin-top: 10px;
+        }
+
+        input {
+            height: 40px;
+            outline: none;
+            border: 1px solid #ccc;
+            display: block;
+            margin: 10px 0px;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            padding: 10px;
+            background-color: rgb(7, 160, 56);
+            color: #fff;
+        }
+
+        .md5 {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+
+        }
+
+        .md5-start {
+            margin: 0 20px;
+        }
+
+        .des {
+            display: flex;
+        }
+
+        .des .main {
+            margin: 0 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 仿射密码 -->
+
+    <div class="w">
+        <ul class="nav">
+            <li class="active">仿射密码</li>
+            <li>MD5加密</li>
+            <li>DES加/解密</li>
+        </ul>
+
+        <div class="container">
+
+            <div class="tabs">
+                <div class="tab active">
+                    <div class="fsmm">
+                        请输入28个字符的Z:<input type="text" placeholder="请输入28个字符的Z">
+                        请输入加密后的C:<input type="text" placeholder="请输入加密后的C">
+
+                        <button class="fsmm-start">开始计算</button>
+                        <!-- 输出结果 -->
+                        <div class="fsmm-list">
+                            <ul>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab">
+                    <!-- md5加密 -->
+                    <div class="md5">
+                        <textarea name="" id="" cols="30" rows="10" class="md5-m" placeholder="输入加密前的明文"></textarea>
+                        <button class="md5-start">MD5加密></button>
+                        <textarea name="" id="" cols="30" rows="10" class="md5-c"></textarea>
+                    </div>
+                </div>
+
+                <div class="tab">
+                    <!-- des加解密 -->
+                    <div class="des">
+                        <textarea name="" id="" cols="30" rows="10" class="des-m"></textarea>
+                        <div class="main">
+                            <input type="text" placeholder="初始密钥" class="des-k">
+                            <div class="buttons">
+                                <button class="des-encode">DES加密</button>
+                                <button class="des-decode">DES解密</button>
+                            </div>
+                        </div>
+                        <textarea name="" id="" cols="30" rows="10" class="des-c"></textarea>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <script type="module">
+        import { fsmm } from './fsmm.js'
+        import { md5 } from './md5.js'
+        import { desEncode, desDecode } from './des.js'
+
+
+        // tab栏切换
+        let navs = document.querySelectorAll(".nav li")
+        let tabs = document.querySelectorAll(".tabs .tab")
+        for (let i = 0; i < navs.length; i++) {
+            navs[i].setAttribute("index", i)
+            navs[i].addEventListener("click", function () {
+                let index = this.getAttribute("index")
+
+                for (let j = 0; j < tabs.length; j++) {
+                    tabs[j].className = "tab"
+                    navs[j].className = ""
+                }
+                this.className = 'active'
+                tabs[index].className = "tab active"
+
+            })
+        }
+
+        // let a=document.querySelector('a')
+
+        // a.className
+
+
+        // console.log(fsmm, md5, desEncode, desEncode);
+        let fsmmBtn = document.querySelector(".fsmm-start")
+        // 开始计算被点击
+
+        let fsUl = document.querySelector(".fsmm-list ul")
+        fsmmBtn.addEventListener("click", function () {
+            let z = document.querySelector(".fsmm input:nth-child(1)").value
+            let c = document.querySelector(".fsmm input:nth-child(2)").value
+
+            let logArr = fsmm(z, c)
+            // 情况ul中的li
+            fsUl.innerHTML = ''
+            // 打印到li上
+            logArr.forEach(item => {
+                let li = document.createElement("li")
+                li.innerHTML = item
+                fsUl.appendChild(li)
+            })
+        })
+
+        let md5Btn = document.querySelector(".md5-start")
+        let md5C = document.querySelector(".md5-c")
+        md5Btn.addEventListener("click", function () {
+            let m = document.querySelector(".md5-m").value
+            let resStr = md5(m)
+            md5C.value = resStr
+        })
+
+        let desEnBtn = document.querySelector(".des-encode")
+        let desDeBtn = document.querySelector(".des-decode")
+
+        // des加密
+        desEnBtn.addEventListener("click", function () {
+            let desK = document.querySelector(".des-k")
+            let desM = document.querySelector(".des-m")
+            let desC = document.querySelector(".des-c")
+            let m = desM.value
+            let k = desK.value
+            let resStr = desEncode(m, k)
+            desC.value = resStr
+        })
+
+        // des解密
+        desDeBtn.addEventListener("click", function () {
+            let desK = document.querySelector(".des-k")
+            let desM = document.querySelector(".des-m")
+            let desC = document.querySelector(".des-c")
+            let c = desC.value
+            let k = desK.value
+            let resStr = desEncode(c, k)
+            desM.value = resStr
+        })
+
+
+    </script>
+
+</body>
+
+</html>
