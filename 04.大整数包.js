@@ -84,24 +84,39 @@ BigNum.prototype.toString=function(){
 
     // let num=this.num.filter(item=>item!==0)
     let res=''
-    let flag=false
-    for(let i=this.num.length-1;i>=0;i--){
+    // let flag=false
+    // for(let i=this.num.length-1;i>=0;i--){
 
-        // 去除无用的前0
-        if(this.num[i]!==0&&!flag){
-            flag=true
+    //     // 去除无用的前0
+    //     if(this.num[i]!==0&&!flag){
+    //         flag=true
+    //     }
+    //     if(flag){
+    //         if(this.num[i]===-3){
+    //             res+='-'
+    //             continue
+    //         }
+    //         res+=this.num[i]
+    //     }   
+    // }
+
+    for(let i=this.num.length-1;i>=0;i--){
+        if(this.num[i]===-3){
+            res+='-'
+            continue
         }
-        if(flag){
-            if(this.num[i]===-3){
-                res+='-'
-                continue
-            }
-            res+=this.num[i]
-        }   
+        res+=this.num[i]  
     }
+
     console.log(res);
 }
 
+// 用于去除，进行单次操作（正数--->负数）后，最高位出现0的情况
+BigNum.prototype.removeZero=function(){
+    while(this.num[this.num.length-1]===0){
+        this.num.pop()
+    }
+}
 
 // BigNum的原型方法，a.modAdd(b) 
 BigNum.prototype.modAdd=function(b){
@@ -113,7 +128,7 @@ BigNum.prototype.modAdd=function(b){
 
     const type=getType(this,b)
     const result=modAddHandle[type](this,b)
-
+    result.removeZero()
     return result
 }
 
@@ -127,7 +142,7 @@ BigNum.prototype.modSub=function(b){
 
     const type=getType(this,b)
     const result=modSubHandle[type](this,b)
-
+    result.removeZero()
     return result
 }
 
@@ -180,11 +195,18 @@ BigNum.prototype.mod=function(p){
 
 // BigNum的原型方法，模整除法
 BigNum.prototype.modDiv=function(b){
+    console.log(b instanceof BigNum);
+    if(!(b instanceof BigNum)){
+        throw new Error('参数类型必须为BigNum')
+    }
     // 做一个减法， 统计次数（大 数）
     // (a/b) a一直减b，直到不能a为负数，次数为结果
 
     // (-a/-b)
 
+    // 获取一下a，b类型
+    let type=getType(this,b)
+    return modDivHandle[type](this,b)
 }
 
 // BigNum的原型方法，模取余
@@ -245,7 +267,7 @@ const plusModSub=(a,b)=>{
 }
 
 // 模加处理函数
-let modAddHandle={
+const modAddHandle={
     // 双方为正的处理
     '0':function(a,b){
         let _newArr=[]
@@ -324,7 +346,7 @@ let modAddHandle={
 
 
 // 模减处理函数
-let modSubHandle={
+const modSubHandle={
 
     // a,b同时为正
     // a-b
@@ -381,6 +403,8 @@ let modSubHandle={
     }
 }
 
+// 模乘处理函数
+// 不使用加法进行，直接使用十进制的乘法
 const modMulHandle={
     // a,b同时为正
     // a*b
@@ -390,36 +414,67 @@ const modMulHandle={
         // a<b 
         // a=b
         // 取小的作为循环次数
-        let res=a.compare(b)
-        // 循环变量
-        let i=new BigNum('1')
-        // 循环+1
-        let c=new BigNum('1')
-        // 累加的值
-        let sum=new BigNum('0')
+        // let res=a.compare(b)
+        // // 循环变量
+        // let i=new BigNum('1')
+        // // 循环+1
+        // let c=new BigNum('1')
+        // // 累加的值
+        // let sum=new BigNum('0')
 
-        // 每次加的值
-        let val=null
-        // 循环次数
-        let len=null
+        // // 每次加的值
+        // let val=null
+        // // 循环次数
+        // let len=null
         
-        if(res>=0){
-            // a>=b
-            val=new BigNum(a)
-            len=new BigNum(b)
-        }else{
-            val=new BigNum(b)
-            len=new BigNum(a)
-        }
+        // if(res>=0){
+        //     // a>=b
+        //     val=new BigNum(a)
+        //     len=new BigNum(b)
+        // }else{
+        //     val=new BigNum(b)
+        //     len=new BigNum(a)
+        // }
 
-        // i<b
-        while(i.compare(len)<1){
+        // // i<b
+        // while(i.compare(len)<1){
+        //     sum=sum.modAdd(val)
+        //     // i++
+        //     i= i.modAdd(c)
+        // }
+
+        // return sum
+        
+        // 进行十进制乘法
+        // 判断长度是否相同
+        let alen=a.length
+        let blen=b.length
+        // 取其长
+        let len=alen>blen? alen:blen
+        let carry=0
+        let sum=new BigNum('0')
+        for(let i=0;i<len;i++){
+            // 
+            let val=new BigNum(b)
+            let cnt=a.num[i]
+
+            if(cnt===0){
+                val=new BigNum('0')
+            }
+            for(let j=0;j<cnt-1;j++){
+                val=val.modAdd(val)
+            }
+
+            for(let k=0;k<i;k++){
+                val.num.unshift(0)
+            }
+
+            // 累加到num
             sum=sum.modAdd(val)
-            // i++
-            i= i.modAdd(c)
         }
 
-        return sum
+        // 得到和个位数相乘的大整数
+
     },
 
     // a,b同时为负数 -a*-b  a*b
@@ -459,6 +514,67 @@ const modMulHandle={
     }
 }
 
+// 模整除
+const modDivHandle={
+    // a/b
+    '0':function(a,b){
+        // 这里已经保证了a，b都是正数
+        // 比较a,b
+        let res=a.compare(b)
+        let result=null
+        if(res===1){
+            // 统计a被减小成负数的次数
+            let i=new BigNum('0')
+            let val=new BigNum(a)
+            let pyload=new BigNum(b)
+            let one=new BigNum('1')
+            while(val.isPlus()){
+                val=val.modSub(pyload)
+                i=i.modAdd(one)
+            }
+
+            result=i.modSub(one)
+        }else if(res===0){
+            result=new BigNum('1')
+        }else{
+            result=new BigNum('0')
+        }
+
+        return result
+    },
+
+    // -a/-b a/b
+    '1':function(a,b){
+        let newA=new BigNum(a)
+        let newB=new BigNum(b)
+        newA.num.pop()
+        newB.num.pop()
+        return this['0'](newA,newB)
+    },
+
+    // -a/b  a/-b
+    '2':function(a,b){
+        let res=null
+        if(a.isPlus()){
+            let newB=new BigNum(b)
+            newB.num.pop()
+            res=this['0'](a,newB)
+        }
+
+        if(b.isPlus()){
+            let newA=new BigNum(a)
+            newA.num.pop()
+            res=this['0'](newA,b)
+        }
+
+        // 结果为不为0的处理
+        if(res.compare(new BigNum('0'))!==0){
+            res.num.push(-3)
+        }
+        return res
+    }
+}
+
 // modAddHandle['1'](new BigNum(-33),new BigNum(-33))
 
 
@@ -473,6 +589,7 @@ const modMulHandle={
 
 
 
-new BigNum('30').mod(16).toString()
+// new BigNum('1000').modSub(new BigNum('999')).toString()
 
 
+new BigNum('3000000').modDiv(new BigNum('3')).toString()

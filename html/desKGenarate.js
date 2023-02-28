@@ -156,6 +156,9 @@ function circleChange(arr,length){
 
 export const getChildK=function(value="FEDCBA9876543210"){
     // 初始密钥
+    if(value===''){
+        value="FEDCBA9876543210"
+    }
     // let value="FEDCBA9876543210"
     let initalArr=hexToBinary(value)
 

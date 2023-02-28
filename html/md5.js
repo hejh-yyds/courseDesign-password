@@ -44,7 +44,7 @@ function intTobin(n,length=8){
     let res=''
     for(let i=0;i<length;i++){
 
-        let str=new String((n>>i)&1) 
+        let str=new String((n>>>i)&1) 
         res=str+res
     }
 
@@ -100,6 +100,7 @@ function generateXarr(message){
     // 判断是否为512的整数倍
     let cStrLen=cStr.length
     let initLength=cStrLen
+    console.log('initLength',initLength);
     // let floorBlocks=Math.floor(cStrLen/512)
 
     // 不足448
@@ -133,7 +134,7 @@ function generateXarr(message){
     // length长度表示8位<=255
     // >255 16位
     let lenBinary=null
-    if(initLength<255){
+    if(initLength<=255){
         lenBinary=intTobin(initLength)
     }else{
         lenBinary=intTobin(initLength,16)
@@ -148,13 +149,18 @@ function generateXarr(message){
     // 高位在前
     cStr+=lenBinary
     // 判断长度是否为64位，前补0
-    if(lenBinary.length<64){
-        let tempStr=''
-        for(let k=lenBinary.length;k<64;k++){
-            tempStr+='0'
-        }
-        cStr+=tempStr
-    }
+    // if(lenBinary.length<64){
+    //     let tempStr=''
+    //     for(let k=lenBinary.length;k<64;k++){
+    //         tempStr+='0'
+    //     }
+    //     cStr+=tempStr
+    // }
+
+    while ((cStr.length)%512 !== 0){
+        cStr+='0'
+    }          
+            
  
         
     // 消息分成512比特块n个

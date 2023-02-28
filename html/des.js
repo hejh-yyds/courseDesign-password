@@ -132,7 +132,7 @@ const round=(L0,R0,Ki)=>{
 
 
 // （加密）轮函数+逆初始IP
-const fChange=(arr)=>{
+const fChange=(arr,k)=>{
 
     // 左右部分分离
     let L=[]
@@ -157,7 +157,7 @@ const fChange=(arr)=>{
     // ]
 
     // 获取子密钥数组
-    let ks=getChildK()
+    let ks=getChildK(k)
 
     // for 循环16轮
     
@@ -186,7 +186,7 @@ const fChange=(arr)=>{
 }
 
 // (解密) 轮函数+逆初始IP
-const fChange2=(arr)=>{
+const fChange2=(arr,k)=>{
 
     // 左右部分分离
     let L=[]
@@ -212,7 +212,7 @@ const fChange2=(arr)=>{
     // ]
 
     // 获取子密钥数组
-    let ks=getChildK()
+    let ks=getChildK(k)
 
     // for 循环16轮
     
@@ -457,23 +457,39 @@ function binToHex(binArr){
 }
 
 // 加密主函数
-function mainFn(){
+function mainFn(m,k){
     // 明文长度64位(8字节)
-    let m='12345678'
-    m=utf8Encode(m)
-    // 转换为ascall码 8位存储
+    // let m='12345678'
+
+    let res=''
+    let m1=m
+    let code=8-(m1.length%8)
+    code=''+code
+    while(m1.length%8!==0){
+        m1+=code
+    }
+
+    for(let i=0;i<m1.length;i+=8){
+
+        let m=m1.substring(i,i+8)
+        m=utf8Encode(m)
+        // 转换为ascall码 8位存储
     
-    // let initarr=hexToBinary(m)
-    let initarr=to64Bit(m)
-    console.log('init arr',initarr);
-    let newArr=initPChange(initarr)
-    console.log('change1 arr',m);
-    let result=fChange(newArr)
+        // let initarr=hexToBinary(m)
+        let initarr=to64Bit(m)
+        console.log('init arr',initarr);
+        let newArr=initPChange(initarr)
+        console.log('change1 arr',m);
+        let result=fChange(newArr,k)
 
-    console.log(result);
-    // console.log(parseInt(result.join(""),2).toString(16));
+        console.log(result);
+        // console.log(parseInt(result.join(""),2).toString(16));
 
-    console.log(binToHex(result));
+        console.log(binToHex(result));
+        res+=binToHex(result)
+    }
+    
+    return res
 }
 
 // 获取ascall码对应的字符
@@ -489,33 +505,50 @@ function getAsc(arr){
 }
 
 // 解密主函数
-function DCode(){
+function DCode(c,k){
     // 明文长度64位(8字节)
     // let m='12345678'
     // m=utf8Encode(m)
     // 转换为ascall码 8位存储
+
     
     // let initarr=hexToBinary(m)
     // let initarr=to64Bit(m)
-    // console.log('init arr',initarr);
-    let initarr=hexToBinary("7321756f8650415a")
-    let newArr=initPChange(initarr)
-    // console.log('change1 arr',m);
-    let result=fChange2(newArr)
 
-    console.log(binToHex(result));
+    let res=''
 
-    // 对64位的比特，8位一组，求acass码
-    console.log(getAsc(result));
+    let c1=c
 
-    // console.log(parseInt(result.join(""),2).toString(16));
+    for(let i=0;i<c1.length;i+=16){
+        let c=c1.substring(i,i+16)
+        console.log('des解密');
+        // console.log('init arr',initarr);
+        let initarr=hexToBinary(c)
+        let newArr=initPChange(initarr)
+        // console.log('change1 arr',m);
+        let result=fChange2(newArr,k)
+
+        console.log(binToHex(result));
+
+        // 对64位的比特，8位一组，求acass码
+        console.log(getAsc(result));
+
+        // return getAsc(result)
+        // console.log(parseInt(result.join(""),2).toString(16));
+
+        res+=getAsc(result)
+    }
+
+    // 
+    return res
+    
 }
 
 // mainFn()
 
 // DCode()
 
-export const desEncode=mainFn
+export const desEncode= mainFn
 export const desDecode= DCode
 
 // export default{

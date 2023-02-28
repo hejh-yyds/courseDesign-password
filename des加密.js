@@ -511,6 +511,6 @@ function DCode(){
     // console.log(parseInt(result.join(""),2).toString(16));
 }
 
-mainFn()
+// mainFn()
 
-// DCode()
+DCode()

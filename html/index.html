@@ -14,6 +14,26 @@
             box-sizing: border-box;
         }
 
+        .show {
+            padding: 20px;
+            transform: translate(-50%, -50%);
+            left: 50%;
+            top: 50%;
+            position: absolute;
+            background-color: rgba(0, 0, 0, .6);
+            color: #fff;
+            /* display: none; */
+            transform: scale(0);
+            opacity: 0;
+            transition: all .3s;
+        }
+
+        .show.hide {
+            transform: scale(1);
+            opacity: 1;
+            /* display: block; */
+        }
+
         .nav li {
             list-style: none;
         }
@@ -22,8 +42,6 @@
             display: flex;
             height: 40px;
             border-bottom: 1px solid #eee;
-
-
         }
 
         .nav li {
@@ -80,12 +98,77 @@
             margin: 0 20px;
         }
 
-        .des {
+        .des form {
             display: flex;
+            align-items: center;
         }
 
         .des .main {
             margin: 0 20px;
+        }
+
+        .des .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .buttons button {
+            width: 100px;
+        }
+
+
+        /* 大整数包相关 */
+
+        .second-nav {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .second-nav li {
+            cursor: pointer;
+            padding: 10px;
+            list-style: none;
+            color: black;
+            background-color: #fff;
+            /* border: 1px solid #ccc; */
+        }
+
+        .second-nav li.active {
+            color: lightgreen;
+            /* background-color: lightgreen; */
+            border-bottom: 1px solid lightgreen;
+        }
+
+        .big-num button {
+            width: 200px;
+        }
+
+        .big-num .mod-text {
+            display: inline-block;
+            width: 200px;
+        }
+
+        .big-num input {
+            width: 1000px;
+            /* height: 100px; */
+        }
+
+        .big-num>div {
+            display: none;
+        }
+
+        .big-num>div.active {
+            display: block;
+        }
+
+        input {
+            font-size: 16px;
+        }
+
+        textarea {
+            padding: 3px;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -94,21 +177,26 @@
     <!-- 仿射密码 -->
 
     <div class="w">
+
+        <div class="show">计算完成</div>
         <ul class="nav">
             <li class="active">仿射密码</li>
             <li>MD5加密</li>
             <li>DES加/解密</li>
+            <li>大整数包运算</li>
         </ul>
 
         <div class="container">
-
             <div class="tabs">
                 <div class="tab active">
                     <div class="fsmm">
-                        请输入28个字符的Z:<input type="text" placeholder="请输入28个字符的Z">
-                        请输入加密后的C:<input type="text" placeholder="请输入加密后的C">
+                        <form action="">
+                            请输入28个字符的Z:<input type="text" placeholder="请输入28个字符的Z" required
+                                value="计算机学院网络工程信息安全，我们热爱中华人民共和国。大家">
+                            请输入加密后的C:<input type="text" placeholder="请输入加密后的C" required value="和院程安我爱计">
+                            <button class="fsmm-start">开始计算</button>
+                        </form>
 
-                        <button class="fsmm-start">开始计算</button>
                         <!-- 输出结果 -->
                         <div class="fsmm-list">
                             <ul>
@@ -120,34 +208,154 @@
 
                 <div class="tab">
                     <!-- md5加密 -->
-                    <div class="md5">
-                        <textarea name="" id="" cols="30" rows="10" class="md5-m" placeholder="输入加密前的明文"></textarea>
+                    <form class="md5">
+                        <textarea name="" id="" cols="30" rows="10" class="md5-m" placeholder="输入加密前的明文"
+                            required></textarea>
                         <button class="md5-start">MD5加密></button>
                         <textarea name="" id="" cols="30" rows="10" class="md5-c"></textarea>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="tab">
                     <!-- des加解密 -->
                     <div class="des">
-                        <textarea name="" id="" cols="30" rows="10" class="des-m"></textarea>
-                        <div class="main">
-                            <input type="text" placeholder="初始密钥" class="des-k">
-                            <div class="buttons">
-                                <button class="des-encode">DES加密</button>
-                                <button class="des-decode">DES解密</button>
+                        <form action="">
+                            <textarea name="" id="" cols="30" rows="10" class="des-m" required></textarea>
+                            <div class="main">
+                                <input type="text" placeholder="初始密钥" class="des-k">
+                                <div class="buttons">
+                                    <button class="des-encode">DES加密</button>
+                                    <button class="des-decode">DES解密</button>
+                                </div>
                             </div>
-                        </div>
-                        <textarea name="" id="" cols="30" rows="10" class="des-c"></textarea>
+                            <textarea name="" id="" cols="30" rows="10" class="des-c"></textarea>
+                        </form>
+
                     </div>
                 </div>
+
+                <div class="tab">
+                    <!-- 大整数包的运算 -->
+                    <ul class="second-nav">
+                        <li class="active">加法</li>
+                        <li>减法</li>
+                        <li>乘法</li>
+                        <li>除法</li>
+                        <li>取余</li>
+                        <li>幂模</li>
+                        <li>GCD</li>
+                        <li>乘法逆</li>
+                    </ul>
+
+                    <!-- 我们可以开启二级tab -->
+                    <!-- 需要进行那个操作，就显示哪个 -->
+                    <div class="random">
+                        <input type="text" placeholder="最小位数" value="150">
+                        <input type="text" placeholder="最大位数" value="300">
+                        <button class="randomBtn">随机生成大整数A,B</button>
+                    </div>
+                    <div class="big-num">
+
+
+
+
+                        <div class="add active">
+                            <form action="">
+                                <div class="title">加法</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数" class="mod-text">
+                            </form>
+                        </div>
+                        <div class="sub">
+                            <form action="">
+                                <div class="title">减法</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                        <div class="mul">
+                            <form action="">
+                                <div class="title">乘法</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                        <div class="div">
+                            <form action="">
+                                <div class="title">除法</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                        <div class="rest">
+                            <form action="">
+                                <div class="title">取余</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                        <div class="pow">
+                            <form action="">
+                                <div class="title">幂模</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                        <div class="gcd">
+                            <form action="">
+                                <div class="title">GCD</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                        <div class="ex-gcd">
+                            <form action="">
+                                <div class="title">乘法逆</div>
+                                <input type="text" placeholder="大整数A" required>
+                                <input type="text" placeholder="大整数B" required>
+                                <input type="text" placeholder="运算结果">
+                                <button class="calBtn">计算</button>
+                                <button class="modBtn">取模</button>
+                                <input type="text" placeholder="输入模数">
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="test-res" style="color:green;display: none;">
+                        计算正确
+                    </div>
+
+                    <button class="start-cal">开始计算</button>
+                </div>
             </div>
-
-
-
-
-
-
         </div>
     </div>
 
@@ -156,11 +364,17 @@
 
 
 
+    <script src="./utils/jquery-3.2.1.min.js"></script>
+    <script src="./my-bigNum.js"></script>
 
     <script type="module">
         import { fsmm } from './fsmm.js'
         import { md5 } from './md5.js'
         import { desEncode, desDecode } from './des.js'
+
+
+        // new BigNum('123').modAdd(new BigNum('456')).toString()
+
 
 
         // tab栏切换
@@ -185,15 +399,22 @@
 
         // a.className
 
+        let show = document.querySelector(".show")
 
         // console.log(fsmm, md5, desEncode, desEncode);
         let fsmmBtn = document.querySelector(".fsmm-start")
         // 开始计算被点击
 
         let fsUl = document.querySelector(".fsmm-list ul")
-        fsmmBtn.addEventListener("click", function () {
+        fsmmBtn.addEventListener("click", function (e) {
+            e.preventDefault()
             let z = document.querySelector(".fsmm input:nth-child(1)").value
             let c = document.querySelector(".fsmm input:nth-child(2)").value
+
+            if (z === '' || c === '') {
+                alert('z和c不能为空')
+                return
+            }
 
             let logArr = fsmm(z, c)
             // 情况ul中的li
@@ -204,40 +425,344 @@
                 li.innerHTML = item
                 fsUl.appendChild(li)
             })
+
+            show.classList.add('hide')
+
+            setTimeout(() => {
+                show.classList.remove('hide')
+            }, 1500)
         })
 
         let md5Btn = document.querySelector(".md5-start")
         let md5C = document.querySelector(".md5-c")
-        md5Btn.addEventListener("click", function () {
+        md5Btn.addEventListener("click", function (e) {
+            e.preventDefault()
             let m = document.querySelector(".md5-m").value
+            if (m === '') {
+                alert('明文m不能为空')
+                return
+            }
             let resStr = md5(m)
             md5C.value = resStr
+
+            show.classList.add('hide')
+
+            setTimeout(() => {
+                show.classList.remove('hide')
+            }, 1500)
         })
 
         let desEnBtn = document.querySelector(".des-encode")
         let desDeBtn = document.querySelector(".des-decode")
 
         // des加密
-        desEnBtn.addEventListener("click", function () {
+        desEnBtn.addEventListener("click", function (e) {
+            e.preventDefault()
             let desK = document.querySelector(".des-k")
             let desM = document.querySelector(".des-m")
             let desC = document.querySelector(".des-c")
             let m = desM.value
             let k = desK.value
+            if (m === '') {
+                alert('DES加密时m不能为空')
+                return
+            }
             let resStr = desEncode(m, k)
             desC.value = resStr
+
+            show.classList.add('hide')
+
+            setTimeout(() => {
+                show.classList.remove('hide')
+            }, 1500)
         })
 
         // des解密
-        desDeBtn.addEventListener("click", function () {
+        desDeBtn.addEventListener("click", function (e) {
+            e.preventDefault()
             let desK = document.querySelector(".des-k")
             let desM = document.querySelector(".des-m")
             let desC = document.querySelector(".des-c")
             let c = desC.value
             let k = desK.value
-            let resStr = desEncode(c, k)
+            if (c === '') {
+                alert("DES解密时不能为空")
+            }
+            let resStr = desDecode(c, k)
             desM.value = resStr
+
+            show.classList.add('hide')
+
+            setTimeout(() => {
+                show.classList.remove('hide')
+            }, 1500)
         })
+
+
+
+
+        // 大整数包相关
+        // 实现二级tab切换
+
+        let secondNavs = document.querySelectorAll(".second-nav li")
+        let secondTabs = document.querySelectorAll(".big-num>div")
+        let currSecondIndex = 0
+        for (let i = 0; i < secondNavs.length; i++) {
+            secondNavs[i].setAttribute('index', i)
+            secondNavs[i].addEventListener("click", function () {
+                let index = this.getAttribute("index")
+                currSecondIndex = index
+                // 自己添加active属性
+                for (let j = 0; j < secondNavs.length; j++) {
+                    secondNavs[j].className = ''
+                    secondTabs[j].classList.remove('active')
+                }
+
+                this.className = 'active'
+
+                secondTabs[index].classList.add('active')
+                // 
+            })
+        }
+
+        // 随机数生成
+        let rand = document.querySelector(".random")
+        let randBtn = rand.querySelector(".randomBtn")
+        randBtn.addEventListener("click", function (e) {
+            e.preventDefault()
+            // 获取生成位数的范围
+            let min = rand.querySelector("input:nth-of-type(1)").value
+            let max = rand.querySelector("input:nth-of-type(2)").value
+
+            let bits = Math.floor(Math.random() * (max - min + 1)) + (+min)
+
+            console.log('A随机位数', bits);
+            // A，B生成
+            let a = ''
+            let b = ''
+            for (let i = 0; i < bits; i++) {
+                let res1 = Math.floor(Math.random() * 10)
+                a += res1
+            }
+
+            bits = Math.floor(Math.random() * (max - min + 1)) + (+min)
+            console.log('B随机位数', bits);
+            for (let i = 0; i < bits; i++) {
+                let res1 = Math.floor(Math.random() * 10)
+                b += res1
+            }
+
+            // 给当前currSecondIndex对应tab的input
+            let inputs = secondTabs[currSecondIndex].querySelectorAll("input")
+            inputs[0].value = a
+            inputs[1].value = b
+        })
+
+        // 运算实现
+        let calBtns = document.querySelectorAll(".calBtn")
+
+        // let test = document.querySelector('')
+        // test.parentNode
+
+        let getType = (type) => {
+            let obj = {
+                1: '加法',
+                2: '减法',
+                3: '乘法',
+                4: '除法',
+                5: '取余',
+                6: '幂模',
+                7: 'GCD',
+                8: '乘法逆',
+
+            }
+
+            for (let key in obj) {
+                if (obj[key] === type) {
+                    return key
+                }
+            }
+        }
+
+        let calFns = {
+            // 加法
+            1: function (a, b) {
+                return new BigNum(a).modAdd(new BigNum(b)).toString()
+            },
+
+            2: function (a, b) {
+                return new BigNum(a).modSub(new BigNum(b)).toString()
+            },
+
+            3: function (a, b) {
+                return new BigNum(a).modMul(new BigNum(b)).toString()
+            },
+
+            4: function (a, b) {
+                return new BigNum(a).modDiv(new BigNum(b)).toString()
+            },
+
+            5: function (a, b) {
+                return new BigNum(a).modRest(new BigNum(b)).toString()
+            },
+
+            6: function (a, b) {
+                return new BigNum(a).modPow(new BigNum(b)).toString()
+            },
+
+            7: function (a, b) {
+                return new BigNum(a).modGcd(new BigNum(b)).toString()
+            },
+
+            8: function (a, b) {
+                return new BigNum(a).modExGcd(new BigNum(b)).toString()
+            },
+
+            // 对输出的结果进行取模
+            9: function (a, b) {
+                if (b === '') {
+                    b = undefined
+                }
+
+                if (typeof b === 'string') {
+                    b = parseInt(b)
+                }
+
+                return new BigNum(a).mod(b) + ''
+            }
+
+        }
+
+        // 接口方法名称
+        let methods = ['add', 'sub', 'mul', 'div', 'rest', 'pow', 'gcd', 'ex-gcd', 'mod']
+
+        let testDom = document.querySelector(".test-res")
+        // 开始手动计算
+        let timer = null
+        // 计算按钮绑定事件
+        for (let i = 0; i < calBtns.length; i++) {
+            // 每个运算都绑定
+            calBtns[i].addEventListener("click", function (e) {
+
+                e.preventDefault()
+                // 看this
+
+                // 获取父亲
+                let father = this.parentNode
+
+                // 大整数A
+                let a = father.querySelector("input:nth-of-type(1)").value
+                // 大整数B
+                let b = father.querySelector("input:nth-of-type(2)").value
+                // 运算结果
+                let result = father.querySelector("input:nth-of-type(3)")
+
+                // 取模的模数
+                // let modNum = father.querySelector("input:nth-of-type(4)")
+
+                // 根据title元素里面的内容进行不同的运算
+                let title = father.querySelector(".title").innerText
+
+
+
+                let type = getType(title)
+
+                let method = methods[type - 1]
+
+                result.value = calFns[type](a, b)
+
+
+                let testRes = null
+                $.ajax({
+                    type: 'GET',
+                    url: 'http://localhost:18083/calBigNum',
+                    data: {
+                        a1: a,
+                        b1: b,
+                        result: result.value,
+                        method: method,
+                    },
+                    success: function (res) {
+                        // console.log(res);
+                        testRes = res
+
+                        console.log(testRes);
+                        // 正确
+                        if (testRes) {
+                            testDom.style.display = 'block'
+                            testDom.innerHTML = '计算正确'
+                        } else {
+                            testDom.style.display = 'block'
+                            testDom.style.color = 'red'
+                            testDom.innerHTML = '结果有误'
+                            // 停止计算
+                            clearInterval(timer)
+                        }
+                    }
+                })
+
+                // if ()s
+
+
+
+
+            })
+        }
+
+        let autoCalBtn = document.querySelector(".start-cal")
+        autoCalBtn.addEventListener("click", function () {
+            if (autoCalBtn.innerText === '开始计算' && !timer) {
+                autoCalBtn.innerHTML = '停止计算'
+                timer = setInterval(() => {
+                    randBtn.click()
+                    // setTimeout(() => {
+                    calBtns[currSecondIndex].click()
+                    // }, 500)
+
+                }, 1500)
+            } else {
+                autoCalBtn.innerHTML = '开始计算'
+                clearInterval(timer)
+                timer = null
+            }
+
+        })
+
+
+
+        // 取余按钮绑定事件
+        let modBtns = document.querySelectorAll(".modBtn")
+
+        for (let i = 0; i < modBtns.length; i++) {
+            modBtns[i].addEventListener("click", function (e) {
+
+                e.preventDefault()
+
+                // 看this
+
+                // 获取父亲
+                let father = this.parentNode
+
+
+                // 运算结果
+                let result = father.querySelector("input:nth-of-type(3)")
+
+                // 取模的模数
+                let modNum = father.querySelector("input:nth-of-type(4)").value
+
+                // 根据title元素里面的内容进行不同的运算
+                // let title = father.querySelector(".title").innerText
+
+                // let type = getType(title)
+
+                // if ()s
+
+                result.value = calFns[9](result.value, modNum)
+            })
+        }
+
+
+
 
 
     </script>
