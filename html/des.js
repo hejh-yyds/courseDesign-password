@@ -162,9 +162,9 @@ const fChange=(arr,k)=>{
     // for 循环16轮
     
     for(let i=0;i<16;i++){
-        console.log(parseInt(L.join(""),2).toString(16));
-        console.log(parseInt(R.join(""),2).toString(16));
-        console.log(parseInt(ks[i].join(""),2).toString(16));
+        console.log('Li',parseInt(L.join(""),2).toString(16));
+        console.log('Ri',parseInt(R.join(""),2).toString(16));
+        console.log('Ki',parseInt(ks[i].join(""),2).toString(16));
         console.log('------------------------------');
         let res=round(L,R,ks[i])
 
@@ -495,7 +495,7 @@ function mainFn(m,k){
     }
 
     // 一大串的16进制串
-    
+
     
     return res
 }
