@@ -459,7 +459,7 @@ function binToHex(binArr){
 // 加密主函数
 function mainFn(){
     // 明文长度64位(8字节)
-    let m='12345678'
+    let m='我是'
     m=utf8Encode(m)
     // 转换为ascall码 8位存储
     
@@ -481,7 +481,9 @@ function getAsc(arr){
 
     let res=''
     for(let i=0;i<arr.length;i+=8){
+        console.log('10',parseInt( arr.slice(i,i+8).join(""),2));
         let str= String.fromCharCode(parseInt( arr.slice(i,i+8).join(""),2))
+        console.log('ascall',str);
         res+=str
     }
 
@@ -498,7 +500,7 @@ function DCode(){
     // let initarr=hexToBinary(m)
     // let initarr=to64Bit(m)
     // console.log('init arr',initarr);
-    let initarr=hexToBinary("7321756f8650415a")
+    let initarr=hexToBinary("38b32d03b680452d")
     let newArr=initPChange(initarr)
     // console.log('change1 arr',m);
     let result=fChange2(newArr)

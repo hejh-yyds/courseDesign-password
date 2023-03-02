@@ -398,16 +398,18 @@ function utf8Encode(string) {
     for (var n = 0; n < string.length; n++) {
       var c = string.charCodeAt(n);
     //   console.log(c)
-      if (c < 128) {
+    //   if (c < 128) {
+    //     utftext += String.fromCharCode(c);
+    //   } else if ((c > 127) && (c < 2048)) {
+    //     utftext += String.fromCharCode((c >> 6) | 192);
+    //     utftext += String.fromCharCode((c & 63) | 128);
+    //   } else {
+    //     utftext += String.fromCharCode((c >> 12) | 224);
+    //     utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+    //     utftext += String.fromCharCode((c & 63) | 128);
+    //   }
+
         utftext += String.fromCharCode(c);
-      } else if ((c > 127) && (c < 2048)) {
-        utftext += String.fromCharCode((c >> 6) | 192);
-        utftext += String.fromCharCode((c & 63) | 128);
-      } else {
-        utftext += String.fromCharCode((c >> 12) | 224);
-        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-        utftext += String.fromCharCode((c & 63) | 128);
-      }
     }
     return utftext;
 }
@@ -432,7 +434,8 @@ function to64Bit(message){
     for(let i=0;i<message.length;i++){
         let code=message.charCodeAt(i)
         // TODO
-        let binaryStr=intTobin(code)
+        // let binaryStr=intTobin(code,8)
+        let binaryStr=intTobin(code,16)
         cStr+=binaryStr
     }
 
@@ -461,17 +464,19 @@ function mainFn(m,k){
     // 明文长度64位(8字节)
     // let m='12345678'
 
+    let type=4
+
     let res=''
     let m1=m
-    let code=8-(m1.length%8)
+    let code=type-(m1.length%type)
     code=''+code
-    while(m1.length%8!==0){
+    while(m1.length%type!==0){
         m1+=code
     }
 
-    for(let i=0;i<m1.length;i+=8){
+    for(let i=0;i<m1.length;i+=type){
 
-        let m=m1.substring(i,i+8)
+        let m=m1.substring(i,i+type)
         m=utf8Encode(m)
         // 转换为ascall码 8位存储
     
@@ -488,6 +493,9 @@ function mainFn(m,k){
         console.log(binToHex(result));
         res+=binToHex(result)
     }
+
+    // 一大串的16进制串
+    
     
     return res
 }
@@ -495,9 +503,11 @@ function mainFn(m,k){
 // 获取ascall码对应的字符
 function getAsc(arr){
 
+    let type=16
     let res=''
-    for(let i=0;i<arr.length;i+=8){
-        let str= String.fromCharCode(parseInt( arr.slice(i,i+8).join(""),2))
+    for(let i=0;i<arr.length;i+=type){
+        let str= String.fromCharCode(parseInt( arr.slice(i,i+type).join(""),2))
+        console.log('ascall',str);
         res+=str
     }
 
@@ -544,7 +554,8 @@ function DCode(c,k){
     
 }
 
-// mainFn()
+// mainFn("BAAAAAAA","AAAAAAAB")
+
 
 // DCode()
 

@@ -170,7 +170,7 @@ BigNum.prototype.toString=function(){
         res+=this.num[i]  
     }
 
-    console.log(res);
+    // console.log(res);
 
     return res
 }
@@ -217,7 +217,7 @@ BigNum.prototype.modAdd=function(b){
     }
 
     const type=getType(this,b)
-    const result=modAddHandle[type](this,b)
+    let result=modAddHandle[type](this,b)
     result.removeZero()
     return result
 }
@@ -231,7 +231,7 @@ BigNum.prototype.modSub=function(b){
     }
 
     const type=getType(this,b)
-    const result=modSubHandle[type](this,b)
+    let result=modSubHandle[type](this,b)
     result.removeZero()
     return result
 }
@@ -313,17 +313,22 @@ BigNum.prototype.modDiv=function(b){
 
     // 获取一下a，b类型
     let type=getType(this,b)
-    return modDivHandle[type](this,b)
+    return modDivHandle2[type](this,b)
 }
 
 // BigNum的原型方法，幂
-BigNum.prototype.modPow=function(b){
+BigNum.prototype.modPow=function(b,m=new BigNum("2147483648")){
+
+    console.log('幂的 mod ',m.toString());
     if(!(b instanceof BigNum)){
         throw new Error('参数类型必须为BigNum')
     }
+
     // a**b
 
+    let one=new BigNum('1')
     let zero=new BigNum('0')
+    let two=new BigNum('2')
     
     if(this.compare(zero)===0){
         throw new Error('底数不能为0')
@@ -335,41 +340,62 @@ BigNum.prototype.modPow=function(b){
 
     
     if(this.compare(new BigNum('1'))===0){
-        return new BigNum('1')
+        return new BigNum('1').modRest(m)
     }
     if(b.compare(zero)===0){
-        return new BigNum('1')
+        return new BigNum('1').modRest(m)
     }
 
-    let getPow=(a,b)=>{
-        // 首先保证，a!=0,b>0
-        let one=new BigNum('1')
-        // 当b为1是
-        if(b.compare(one)===0){
-            // 直接返回a
-            return a
-        }
 
-        // 先求b/2 ,有余数，和没有余数
-        let zero=new BigNum('0')
-        let two=new BigNum('2')
-        let k=b.divTwo()
-        let res=b.modSub(k.modMul(two))
-        
-
-        // b-k*2===0? 
-        if(res.compare(zero)===0){
-            // let k1=new BigNum()
-            return getPow(a,k).modMul(getPow(a,k))
-        }else{
-            let k2=new BigNum(k)
-            k2=k2.modAdd(one)
-            return getPow(a,k).modMul(getPow(a,k2))
+    function modMRec(a, power, mod)
+    {
+        // assert(a>=1 && power >=0 && mod >=1);
+        if (power.compare(zero) === 0) {
+            return new BigNum('1').modRest(mod);
         }
-        
+        if (power.compare(one)===0) {
+            return a.modRest(mod);
+        }
+        if (power.num[0]%2!==0) {
+            let temp = modMRec(a, power.divTwo(), mod);
+            return  ((temp.modMul(temp)).modMul(a)).modRest(mod);
+        } 
+        else {
+            let temp = modMRec(a, power.divTwo(), mod);
+            return  (temp.modMul(temp)).modRest(mod);
+        }
     }
 
-    return getPow(this,b)
+
+    // let getPow=(a,b)=>{
+    //     // 首先保证，a!=0,b>0
+    //     let one=new BigNum('1')
+    //     // 当b为1是
+    //     if(b.compare(one)===0){
+    //         // 直接返回a
+    //         return a
+    //     }
+
+    //     // 先求b/2 ,有余数，和没有余数
+    //     let zero=new BigNum('0')
+    //     let two=new BigNum('2')
+    //     let k=b.divTwo()
+    //     let res=b.modSub(k.modMul(two))
+        
+
+    //     // b-k*2===0? 
+    //     if(res.compare(zero)===0){
+    //         // let k1=new BigNum()
+    //         return getPow(a,k).modMul(getPow(a,k))
+    //     }else{
+    //         let k2=new BigNum(k)
+    //         k2=k2.modAdd(one)
+    //         return getPow(a,k).modMul(getPow(a,k2))
+    //     }
+        
+    // }
+
+    return modMRec(this,b,m)
 }
 
 // BigNum的原型方法，模取余
@@ -484,6 +510,9 @@ BigNum.prototype.modExGcd=function(b){
 
     return result
 }
+
+
+// 生成大素数
 
 
 // 正数相减
@@ -890,6 +919,265 @@ const modDivHandle={
     }
 }
 
+
+// function divHandle(a,b){
+//     // let newA=new BigNum(a)
+//     // let newB=new BigNum(b)
+
+//     let arrA=[...a.num].reverse()
+//     // let arrB=[...b.num]
+
+//     let standLen=b.num.length
+
+//     let start=0
+//     let end=standLen
+//     let zero=new BigNum('0')
+
+//     let optA=new BigNum()
+//     let optB=new BigNum(b)
+//     let str=''
+
+//     // arrA 高位在前
+//     while(end<=arrA.length){
+//         // 从start-end
+//         optA.num=arrA.slice(start,end).reverse()
+        
+//         if(optA.compare(optB)===-1){
+//             // str+='0'
+//             end++
+//         }else{
+//             // 取1-9
+//             let left=1
+//             let right=9
+//             let val=null
+//             while(left<=right){
+//                 let mid=Math.floor( (left+right)/2)
+//                 val=new BigNum(mid)
+//                 let res=optA.modSub(val.modMul(optB))
+                
+//                 if(res.isPlus()){
+//                     if(res.compare(zero)===0){
+//                         right=mid
+//                         break
+//                     }else{
+//                         left=mid+1
+//                     }
+//                 }else{
+//                     right=mid-1
+//                 }
+//             }
+
+//             str+=right
+
+//             // 取right
+//             let k=new BigNum(right)
+            
+
+//             // 余数
+//             let rest=optA.modSub(k.modMul(optB))
+
+//             // 新的optA,修改arrA
+//             arrA=rest.num.reverse().concat(arrA.slice(end))
+
+//             if(arrA.length>=optB.num.length){
+//                  // 看余数的位数与b的位数的差距
+//                 let step=optB.num.length-rest.num.length
+//                 // 要先进行下一次的运算，位数需要补齐
+//                 // arrA.length 可用的位数
+//                 for(let i=0;i<step&&i<arrA.length;i++){
+//                     str+='0'
+//                 }
+//             }
+
+           
+
+            
+//             // end归于b的长度
+//             end=standLen
+
+//         }
+//         // optA =k个optB
+
+//     }
+
+//     console.log(str);
+
+//     return new BigNum(str)
+// }
+
+// 模整除
+
+function divHandle(a,b){
+    // a>b
+
+    // b的位数小于等于a的位数
+
+    // 每次计算，将b的位数扩展到a的位数相同
+
+    let newA=new BigNum(a)
+    let newB=new BigNum(b)
+
+    let map={}
+
+    let zero=new BigNum('0')
+
+    
+    let flag=false
+
+    while(newA.num.length>=newB.num.length){
+        
+        let optB=new BigNum(b)
+        if(newB.num.length<newA.num.length){
+            // b扩展位数
+            let step=newA.num.length-newB.num.length
+            while(step>0){
+                // 最低位补0
+                optB.num.unshift(0)
+                step--
+            }
+        }
+
+        // a,b位数相同
+        // 算a=k*b 0<=k<=9
+
+        
+        while(newA.compare(optB)===-1){
+             // a<b
+            // 说明除不下，扩大位数少一点
+            if(optB.num.length<=newB.num.length){
+                // 说明不能缩小了，终止计算
+                flag=true
+                break
+            }else{
+                // 缩小一位
+                optB.num.shift()
+            }
+        }
+
+        if(flag){
+            break
+        }
+
+        // 到这里说明a>=b
+        // 找到a=k*b k=1-9
+
+        let left=1
+        let right=9
+        let val=null
+        while(left<=right){
+            let mid=Math.floor( (left+right)/2)
+            val=new BigNum(mid)
+            let res=newA.modSub(val.modMul(optB))
+            
+            if(res.isPlus()){
+                if(res.compare(zero)===0){
+                    right=mid
+                    break
+                }else{
+                    left=mid+1
+                }
+            }else{
+                right=mid-1
+            }
+        }
+
+        // right即为k
+        map[optB.num.length]=right
+
+        // 计算余数
+        let rest=newA.modSub(new BigNum(right).modMul(optB))
+        
+
+        // newA要发生变化，变为余数
+        newA.num=rest.num
+
+    }
+
+    // console.log(map);
+
+    // 对map进行处理
+    let max=-1
+    for(let key in map){
+        if(Number(key)>max){
+            max=key
+        }
+    }
+
+    let str=''
+    for(let i=newB.num.length;i<=max;i++){
+        if(map[i]){
+            str=map[i]+str
+        }else{
+            str='0'+str
+        }
+    }
+
+    return new BigNum(str)
+
+}
+const modDivHandle2={
+    // a/b
+    '0':function(a,b){
+        // 这里已经保证了a，b都是正数
+        // 比较a,b
+        // 判断a，b的情况
+        let zero=new BigNum('0')
+        let one=new BigNum('1')
+        if(b.compare(zero)===0){
+            throw new Error('除数不能为0')
+        }
+        if(a.compare(zero)===0){
+            // a为0
+            return new BigNum('0')
+        }
+
+
+        let res=a.compare(b)
+        let result=null
+        if(res===1){
+            // a>b
+            result=divHandle(a,b)
+        }else if(res===0){
+            result=new BigNum('1')
+        }else{
+            result=new BigNum('0')
+        }
+
+        return result
+    },
+
+    // -a/-b a/b
+    '1':function(a,b){
+        let newA=new BigNum(a)
+        let newB=new BigNum(b)
+        newA.num.pop()
+        newB.num.pop()
+        return this['0'](newA,newB)
+    },
+
+    // -a/b  a/-b
+    '2':function(a,b){
+        let res=null
+        if(a.isPlus()){
+            let newB=new BigNum(b)
+            newB.num.pop()
+            res=this['0'](a,newB)
+        }
+
+        if(b.isPlus()){
+            let newA=new BigNum(a)
+            newA.num.pop()
+            res=this['0'](newA,b)
+        }
+
+        // 结果为不为0的处理
+        if(res.compare(new BigNum('0'))!==0){
+            res.num.push(-3)
+        }
+        return res
+    }
+}
+
 // 模取余的处理函数
 const modRestHandle={
 
@@ -1012,7 +1300,7 @@ const modRestHandle={
 // new BigNum('128').modGcd(new BigNum('256')).toString()
 
 
-new BigNum('-2').modPow(new BigNum('6')).toString()
+// new BigNum('6934632205262527509995804380416867068535395330154489281905435698800439954202461355900562409208503562815863409156966238766953947161462918365858580041561322501600847').modPow(new BigNum('94677773010036570419889453981105849625861850895828035916817838631609933443742008292183764499360753108748375571480692827514781370870922067772727543441031357018575063517503221466940')).toString()
 
 
 // new BigNum('1').modGcd(new BigNum('0')).toString()
@@ -1023,3 +1311,147 @@ new BigNum('-2').modPow(new BigNum('6')).toString()
 // console.log(new BigNum('701235435654').modAdd(new BigNum('777666666655555')).toString());
 
 // console.log(new BigNum('222227777712734').toNumber() );
+
+ 
+
+
+ 
+    
+ 
+    
+ 
+    
+ 
+/**
+ * Miller-Rabin测试
+ *
+ * @param n 生成的那个bigNum
+ * @return
+ */
+function passesMillerRabin(n) {
+    // base随机生成，不大于2**32-1
+    let base = 0;
+    if (n.compare(new BigNum('2147483647')) < 0) {
+        // 1-value
+        base = Math.floor( Math.random()* parseInt(n.toString())) + 1;
+    } else {
+        base = Math.floor(Math.random()*2147483647) + 1;
+    }
+
+    base=new BigNum(base)
+
+    let one=new BigNum('1')
+    
+    // n-1
+    let thisMinusOne = n.modSub(one);
+    let m = thisMinusOne;
+
+    // 为偶数
+    while (m.num[0]%2===0) {
+        console.log('m',m.toString());
+        // /2
+        m = m.divTwo();
+        // let z = expmod(base, m, n);
+        let z=base.modPow(m,n)
+
+        console.log('z',z.toString());
+        if (z.compare(thisMinusOne)===0) {
+            break;
+        } else if (z.compare(one)===0) {
+
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+function isPrime(n) {
+    //copy自jdk源码, n的bit数越多, 需要的检测次数就越少
+    //注释说是根据标准 ANSI X9.80, "PRIME NUMBER GENERATION, PRIMALITY TESTING, AND PRIMALITY CERTIFICATES".
+    //我不知道为什么
+    let sizeInBits = n.num.length;
+    let tryTime = 0;
+    if (sizeInBits < 33) {
+        tryTime = 50;
+    }
+
+    if (sizeInBits < 85) {
+        tryTime = 27;
+    } else if (sizeInBits < 170) {
+        tryTime = 15;
+    } else if (sizeInBits < 256) {
+        tryTime = 8;
+    } else if (sizeInBits < 341) {
+        tryTime = 4;
+    } else {
+        tryTime = 2;
+    }
+    return isPrime2(n, tryTime);
+}
+
+/**
+ * 多次调用素数测试, 判定输入的n是否为质数
+ *
+ * @param n
+ * @param tryTime
+ * @return
+ */
+function isPrime2( n, tryTime) {
+    for (let i = 0; i < tryTime; i++) {
+        if (!passesMillerRabin(n)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * 产生一个n bit的素数
+ *
+ * @param bitCount
+ * @return
+ */
+function getPrime(bitCount) {
+    //随机生成一个n bit的大整数
+    // BigInteger init = new BigInteger(bitCount, ran);
+
+    let str=''
+    for(let i=0;i<bitCount;i++){
+        str=str+Math.floor(Math.random()*10)
+    }
+    let init=new BigNum(str)
+    let one =new BigNum('1')
+    let two=new BigNum('2')
+    //如果n为偶数, 则加一变为奇数
+    if (init.num[0]%2===0) {
+        init = init.modAdd(one);
+    }
+
+    console.log(init.toString());
+
+    // let i = 0;
+    //基于素数定理, 平均只需要不到n次搜索, 就能找到一个素数
+    while (!isPrime(init)) {
+        // i++;
+        console.log(init.toString());
+        init = init.modAdd(two);
+
+    }
+    //System.out.println(String.format("try %d\ttimes", i));
+    return init;
+}
+
+// console.log('最终的数',getPrime(100).toString()); 
+// getPrime(2)
+
+
+// console.log(modDivHandle2['0'](new BigNum('111111'),new BigNum('5000')).toString()); 
+
+
+// console.log(new BigNum('10011').modDiv(new BigNum("222")).toString());
+
+
+// console.log(new BigNum('49048777605132077232547568428155666688230569284188602580492233424642978193002653271990994565867887445139581802541945099055503063010574104995173297474822195391175960736275445624288014177436395447246232659503886078709708326039667149633507939082').modPow(new BigNum("1377882783702776526645461656071456743269939480610341428939316689415563684911385895396014095051095926556282175753411210055920283744696761818922537098845917790356579315293181358595741264491497836478888999230158164834344042303826055752895895901079691302682221228583")).toString());
+
+// console.log(getPrime(100).toString()); 

@@ -103,7 +103,7 @@ function processPchange2(initalArr){
     })
 
     // 存储16进制的字符串数组
-    console.log(strArr);
+    console.log('子密钥数组',strArr);
     // console.log(res[0]);
     // console.log(res);
     return res
@@ -161,6 +161,8 @@ export const getChildK=function(value="FEDCBA9876543210"){
     }
     // let value="FEDCBA9876543210"
     let initalArr=hexToBinary(value)
+
+    console.log('初始密钥的数组',initalArr);
 
     console.log('初始密钥',parseInt(initalArr.join(""),2).toString(16));
 

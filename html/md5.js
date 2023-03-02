@@ -245,13 +245,19 @@ function add(B,A,res,mii,ci,lefti){
     console.log('lefti',lefti);
 
     let temp=(A+res+mi+ci)
+    // let temp=addSelf( addSelf( addSelf(A,res),mi),ci)
     console.log('temp',temp);
 
     // 循环左移
     temp=circle_Left(temp,lefti)
     console.log('temp left',temp);
     
-    temp=(B+temp)%Math.pow(2,32)
+    // temp=(B+temp)%Math.pow(2,32)
+    temp=(B+temp)%(Math.pow(2,32))
+    // temp=addSelf(B,temp)%(Math.pow(2,32))
+    // if(temp<0){
+    //     temp=temp+Math.pow(2,32)
+    // }
 
     console.log('temp end',(temp+Math.pow(2,32))%Math.pow(2,32));
 
@@ -336,17 +342,26 @@ function roundFn(type,A,B,C,D,fType,mi,ci,lefti){
 
 // A+AA...
 function addSelf(A,AA){
+
+//     var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+//   var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+//   return (msw << 16) | (lsw & 0xFFFF);
     let res=(A+AA)%(Math.pow(2,32))
     return res
 }
 
 // 格式化输出结果
 function print(A){
+    // if(A<0){
+        
+    //     A=addSelf(A,Math.pow(2,32))
+    // }
+    // console.log('Aaaaaaaaaaa',A);
     A=(A+Math.pow(2,32))%(Math.pow(2,32))
-    A=A.toString(16)
+    let str2=A.toString(16)
     let str=''
     for(let i=0;i<4;i++){
-        str=A.substring(i*2,(i+1)*2)+str 
+        str=str2.substring(i*2,(i+1)*2)+str 
     }
 
     return str
@@ -459,7 +474,7 @@ function mainFn(m){
     console.log(A,B,C,D);
 
     // 16进制字符串
-    console.log(print(A)+print(B)+print(C)+print(D));
+    // console.log(print(A)+print(B)+print(C)+print(D));
 
     let res=print(A)+print(B)+print(C)+print(D)
     return res

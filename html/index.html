@@ -214,6 +214,10 @@
                         <button class="md5-start">MD5加密></button>
                         <textarea name="" id="" cols="30" rows="10" class="md5-c"></textarea>
                     </form>
+
+                    <button class="md5-generate">明文随机生成</button>
+
+                    <button class="md5-start-btn">自动测试</button>
                 </div>
 
                 <div class="tab">
@@ -231,6 +235,10 @@
                             <textarea name="" id="" cols="30" rows="10" class="des-c"></textarea>
                         </form>
 
+                        <button class="des-generate">明文随机生成</button>
+
+                        <button class="des-start-btn">自动测试</button>
+
                     </div>
                 </div>
 
@@ -245,6 +253,7 @@
                         <li>幂模</li>
                         <li>GCD</li>
                         <li>乘法逆</li>
+                        <li>生成大素数</li>
                     </ul>
 
                     <!-- 我们可以开启二级tab -->
@@ -347,6 +356,22 @@
                                 <input type="text" placeholder="输入模数">
                             </form>
                         </div>
+
+                        <div class="generateSusu">
+                            <form action="">
+                                <div class="title">大素数生成</div>
+                                <input type="text" placeholder="大素数的位数(10进制)" required>
+
+                                <input type="text" placeholder="运算结果">
+
+                                <button class="generate-susu" style="margin-bottom: 10px;">生成</button>
+
+
+                                <!-- <button class="calBtn">计算</button> -->
+                                <!-- <button class="modBtn">取模</button> -->
+                                <!-- <input type="text" placeholder="输入模数"> -->
+                            </form>
+                        </div>
                     </div>
 
                     <div class="test-res" style="color:green;display: none;">
@@ -372,8 +397,10 @@
         import { md5 } from './md5.js'
         import { desEncode, desDecode } from './des.js'
 
+        import { codes } from './utils/zh.js'
 
         // new BigNum('123').modAdd(new BigNum('456')).toString()
+
 
 
 
@@ -433,6 +460,25 @@
             }, 1500)
         })
 
+        // md5相关
+        let md5Timer = null
+        let startMd5Btn = document.querySelector(".md5-start-btn")
+        startMd5Btn.addEventListener("click", function () {
+            if (this.innerHTML === '自动测试') {
+                this.innerHTML = "停止自动测试"
+                md5Timer = setInterval(() => {
+                    randMd5Btn.click()
+                    md5Btn.click()
+                }, 2000)
+            } else {
+                this.innerHTML = '自动测试'
+                clearInterval(md5Timer)
+                md5Timer = null
+            }
+
+
+        })
+        let randMd5Btn = document.querySelector(".md5-generate")
         let md5Btn = document.querySelector(".md5-start")
         let md5C = document.querySelector(".md5-c")
         md5Btn.addEventListener("click", function (e) {
@@ -443,6 +489,25 @@
                 return
             }
             let resStr = md5(m)
+            // 交给后端
+
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost:18083/md5Test',
+                data: {
+                    m: m,
+                    result: resStr
+
+                },
+                success: function (res) {
+                    // console.log(res);
+                    let testRes = res
+
+                    console.log('md5测试结果', testRes);
+
+                }
+            })
+
             md5C.value = resStr
 
             show.classList.add('hide')
@@ -452,10 +517,150 @@
             }, 1500)
         })
 
+
+        randMd5Btn.addEventListener("click", function () {
+            // 生成明文
+            // 10-200字符
+            let cnt = Math.floor(Math.random() * 200) + 50
+
+
+
+            let str = ''
+            for (let i = 0; i < cnt; i++) {
+                let type = Math.floor(Math.random() * 4) + 1
+
+
+                if (type === 1) {
+                    // 生成数字0-9
+                    let num = Math.floor(Math.random() * 10)
+                    str += num
+                } else if (type === 2) {
+                    // 生成小写英文字母
+                    // 97-122
+                    let num = Math.floor(Math.random() * 26) + 97
+                    let asc = String.fromCharCode(num)
+                    str += asc
+                } else if (type === 3) {
+                    // 生成大写英文字母
+                    let num = Math.floor(Math.random() * 26) + 65
+                    let asc = String.fromCharCode(num)
+                    str += asc
+                } else {
+                    // 生成中文 19968-40895
+                    // let num = Math.floor(Math.random() * (40869 - 19968 + 1)) + 19968
+                    // let asc = String.fromCharCode(num)
+                    // str += asc
+
+                    let num = Math.floor(Math.random() * 3500)
+                    let m = codes.split(",")[num]
+                    let asc = String.fromCharCode(m)
+                    str += asc
+                }
+            }
+
+            // let message = ''
+            // for (let i = 0; i < cnt; i++) {
+
+            // }
+
+            // 0x4E00, 9FBF  19968-40895
+            // let
+
+            // let str = '&#x5F90;&#x6052;';    //待转换UTF-8
+
+            // let res = unescape(str.replace(/&#x/g, '%u').replace(/;/g, ''));
+
+            // console.log(res);
+
+
+            document.querySelector(".md5-m").value = str
+
+
+        })
+
+
         let desEnBtn = document.querySelector(".des-encode")
         let desDeBtn = document.querySelector(".des-decode")
 
         // des加密
+        let desTimer = null
+        let startDesBtn = document.querySelector(".des-start-btn")
+        startDesBtn.addEventListener("click", function () {
+            if (this.innerHTML === '自动测试') {
+                this.innerHTML = "停止自动测试"
+                desTimer = setInterval(() => {
+                    randDesBtn.click()
+                    desEnBtn.click()
+                }, 2000)
+            } else {
+                this.innerHTML = '自动测试'
+                clearInterval(desTimer)
+                desTimer = null
+            }
+
+
+        })
+        let randDesBtn = document.querySelector(".des-generate")
+        // 生成随机数据，4的倍数
+        randDesBtn.addEventListener("click", function () {
+            // 生成明文
+            // 10-200字符
+            let cnt = Math.floor(Math.random() * 200) + 50
+
+            while (cnt % 4 !== 0) {
+                cnt++
+            }
+
+
+            let str = ''
+            for (let i = 0; i < cnt; i++) {
+                let type = Math.floor(Math.random() * 4) + 1
+
+
+                if (type === 1) {
+                    // 生成数字0-9
+                    let num = Math.floor(Math.random() * 10)
+                    str += num
+                } else if (type === 2) {
+                    // 生成小写英文字母
+                    // 97-122
+                    let num = Math.floor(Math.random() * 26) + 97
+                    let asc = String.fromCharCode(num)
+                    str += asc
+                } else if (type === 3) {
+                    // 生成大写英文字母
+                    let num = Math.floor(Math.random() * 26) + 65
+                    let asc = String.fromCharCode(num)
+                    str += asc
+                } else {
+                    // 生成中文 19968-40895
+                    let num = Math.floor(Math.random() * 3500)
+                    let m = codes.split(",")[num]
+                    let asc = String.fromCharCode(m)
+                    str += asc
+                }
+            }
+
+            // s = unescape(s);  //Unicode解码
+            // console.log(s);  //返回字符串“JavaScript 中国”
+
+            // let message = ''
+            // for (let i = 0; i < cnt; i++) {
+
+            // }
+
+            // 0x4E00, 9FBF  19968-40895
+            // let
+
+            // let str = '&#x5F90;&#x6052;';    //待转换UTF-8
+
+            // let res = unescape(str.replace(/&#x/g, '%u').replace(/;/g, ''));
+
+            // console.log(res);
+
+
+            document.querySelector(".des-m").value = str
+        })
         desEnBtn.addEventListener("click", function (e) {
             e.preventDefault()
             let desK = document.querySelector(".des-k")
@@ -490,6 +695,7 @@
             }
             let resStr = desDecode(c, k)
             desM.value = resStr
+            desC.value = ''
 
             show.classList.add('hide')
 
@@ -507,11 +713,26 @@
         let secondNavs = document.querySelectorAll(".second-nav li")
         let secondTabs = document.querySelectorAll(".big-num>div")
         let currSecondIndex = 0
+        let delay = 1500
         for (let i = 0; i < secondNavs.length; i++) {
             secondNavs[i].setAttribute('index', i)
             secondNavs[i].addEventListener("click", function () {
                 let index = this.getAttribute("index")
                 currSecondIndex = index
+                console.log(index);
+                if (index === '8') {
+                    // console.log('999999999');
+                    document.querySelector(".random").style.display = 'none'
+                    document.querySelector(".start-cal").style.display = 'none'
+                } else {
+                    document.querySelector(".random").style.display = 'block'
+                    document.querySelector(".start-cal").style.display = 'block'
+                }
+                if (index === '5') {
+                    delay = 3000
+                } else {
+                    delay = 1500
+                }
                 // 自己添加active属性
                 for (let j = 0; j < secondNavs.length; j++) {
                     secondNavs[j].className = ''
@@ -574,6 +795,7 @@
                 6: '幂模',
                 7: 'GCD',
                 8: '乘法逆',
+                9: '生成大素数'
 
             }
 
@@ -617,7 +839,6 @@
             8: function (a, b) {
                 return new BigNum(a).modExGcd(new BigNum(b)).toString()
             },
-
             // 对输出的结果进行取模
             9: function (a, b) {
                 if (b === '') {
@@ -629,15 +850,20 @@
                 }
 
                 return new BigNum(a).mod(b) + ''
+            },
+
+            10: function (n) {
+                return getPrime(n).toString()
             }
 
         }
 
         // 接口方法名称
-        let methods = ['add', 'sub', 'mul', 'div', 'rest', 'pow', 'gcd', 'ex-gcd', 'mod']
+        let methods = ['add', 'sub', 'mul', 'div', 'rest', 'pow', 'gcd', 'ex-gcd', 'mod', 'generate']
 
         let testDom = document.querySelector(".test-res")
         // 开始手动计算
+
         let timer = null
         // 计算按钮绑定事件
         for (let i = 0; i < calBtns.length; i++) {
@@ -657,6 +883,7 @@
                 // 运算结果
                 let result = father.querySelector("input:nth-of-type(3)")
 
+                result.value = ''
                 // 取模的模数
                 // let modNum = father.querySelector("input:nth-of-type(4)")
 
@@ -703,9 +930,6 @@
 
                 // if ()s
 
-
-
-
             })
         }
 
@@ -719,7 +943,7 @@
                     calBtns[currSecondIndex].click()
                     // }, 500)
 
-                }, 1500)
+                }, delay)
             } else {
                 autoCalBtn.innerHTML = '开始计算'
                 clearInterval(timer)
@@ -763,6 +987,42 @@
 
 
 
+
+        // 大素数生成
+        let generateBtn = document.querySelector(".generate-susu")
+        let n = generateBtn.parentNode.querySelector("input:nth-of-type(1)")
+        let genRes = generateBtn.parentNode.querySelector("input:nth-of-type(2)")
+        generateBtn.addEventListener("click", function (e) {
+            e.preventDefault()
+            if (n.value === '') {
+                alert("位数不能为空")
+            }
+            genRes.value = ''
+
+            genRes.value = calFns['10'](n.value)
+
+            // 计算一下结果
+
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost:18083/testSusu',
+                data: {
+
+                    result: genRes.value,
+
+                },
+                success: function (res) {
+                    // console.log(res);
+                    let testRes = res
+
+                    console.log(testRes);
+
+                }
+            })
+
+            // if ()s
+
+        })
 
 
     </script>
